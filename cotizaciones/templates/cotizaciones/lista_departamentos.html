@@ -1,0 +1,50 @@
+{% extends 'cotizaciones/base.html' %}
+{% block title %}Lista de Departamentos{% endblock %}
+{% block content %}
+<h2 class="mb-4">Departamentos Disponibles</h2>
+
+<a href="{% url 'cotizaciones:nuevo_departamento' %}" class="btn btn-primary mb-3">
+    <i class="bi bi-plus-circle"></i> Nuevo Departamento
+</a>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Área (m²)</th>
+            <th>Precio</th>
+            <th>Habitaciones</th>
+            <th>Baños</th>
+            <th>Piso</th>
+            <th>Disponible</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in departamentos %}
+        <tr>
+            <td>{{ d.codigo }}</td>
+            <td>{{ d.nombre }}</td>
+            <td>{{ d.area_m2 }}</td>
+            <td>S/ {{ d.precio|floatformat:2 }}</td>
+            <td>{{ d.habitaciones }}</td>
+            <td>{{ d.banos }}</td>
+            <td>{{ d.piso }}</td>
+            <td>{% if d.disponible %}✅{% else %}❌{% endif %}</td>
+            <td>
+                <a href="{% url 'cotizaciones:editar_departamento' d.pk %}" class="btn btn-sm btn-warning">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+                <a href="{% url 'cotizaciones:eliminar_departamento' d.pk %}" class="btn btn-sm btn-danger"
+                   onclick="return confirm('¿Seguro que desea eliminar este departamento?')">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9" class="text-center text-muted">No hay departamentos registrados.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

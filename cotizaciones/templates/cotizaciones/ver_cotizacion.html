@@ -1,0 +1,32 @@
+{% extends 'cotizaciones/base.html' %}
+
+{% block title %}Cotización {{ cotizacion.numero_cotizacion }} - Sistema{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="bi bi-file-text"></i> Cotización {{ cotizacion.numero_cotizacion }}
+                    </h4>
+                    <div>
+                        <a href="{% url 'cotizaciones:descargar_pdf' cotizacion.pk %}" class="btn btn-light btn-sm">
+                            <i class="bi bi-download"></i> PDF
+                        </a>
+                        <a href="{% url 'cotizaciones:imprimir_cotizacion' cotizacion.pk %}" 
+                           target="_blank" class="btn btn-light btn-sm">
+                            <i class="bi bi-printer"></i> Imprimir
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <p>Detalles de la cotización...</p>
+                <a href="{% url 'cotizaciones:lista_cotizaciones' %}" class="btn btn-secondary">Volver</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

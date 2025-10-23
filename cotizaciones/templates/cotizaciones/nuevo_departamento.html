@@ -1,0 +1,11 @@
+{% extends 'cotizaciones/base.html' %}
+{% block title %}Nuevo Departamento{% endblock %}
+{% block content %}
+<h2>Nuevo Departamento</h2>
+<form method="post" class="mt-3">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Guardar</button>
+    <a href="{% url 'cotizaciones:lista_departamentos' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

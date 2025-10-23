@@ -1,0 +1,97 @@
+{% extends 'cotizaciones/base.html' %}
+
+{% block title %}Editar Cotización - Sistema{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">
+                    <i class="bi bi-pencil"></i> Editar Cotización: {{ cotizacion.numero_cotizacion }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre del Cliente</label>
+                            {{ form.nombre_cliente }}
+                            {% if form.nombre_cliente.errors %}
+                                <div class="text-danger">{{ form.nombre_cliente.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">DNI</label>
+                            {{ form.dni_cliente }}
+                            {% if form.dni_cliente.errors %}
+                                <div class="text-danger">{{ form.dni_cliente.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Dirección</label>
+                        {{ form.direccion_cliente }}
+                        {% if form.direccion_cliente.errors %}
+                            <div class="text-danger">{{ form.direccion_cliente.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono</label>
+                            {{ form.telefono_cliente }}
+                            {% if form.telefono_cliente.errors %}
+                                <div class="text-danger">{{ form.telefono_cliente.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email (Opcional)</label>
+                            {{ form.email_cliente }}
+                            {% if form.email_cliente.errors %}
+                                <div class="text-danger">{{ form.email_cliente.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Departamento</label>
+                        {{ form.departamento }}
+                        {% if form.departamento.errors %}
+                            <div class="text-danger">{{ form.departamento.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Descuento (%)</label>
+                        {{ form.descuento }}
+                        {% if form.descuento.errors %}
+                            <div class="text-danger">{{ form.descuento.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Observaciones</label>
+                        {{ form.observaciones }}
+                        {% if form.observaciones.errors %}
+                            <div class="text-danger">{{ form.observaciones.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-save"></i> Guardar Cambios
+                        </button>
+                        <a href="{% url 'cotizaciones:ver_cotizacion' cotizacion.pk %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

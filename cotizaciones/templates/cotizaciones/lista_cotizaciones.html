@@ -57,9 +57,9 @@
                                            class="btn btn-outline-success" title="Descargar PDF">
                                             <i class="bi bi-file-pdf"></i>
                                         </a>
-                                        <a href="{% url 'cotizaciones:imprimir_cotizacion' cotizacion.pk %}" 
-                                           target="_blank" class="btn btn-outline-info" title="Imprimir">
-                                            <i class="bi bi-printer"></i>
+                                        <a href="{% url 'cotizaciones:editar_cotizacion' cotizacion.pk %}" 
+                                           class="btn btn-outline-warning" title="Editar">
+                                            <i class="bi bi-pencil"></i>
                                         </a>
                                         <button type="button" class="btn btn-outline-danger" 
                                                 onclick="confirmarEliminar({{ cotizacion.pk }}, '{{ cotizacion.numero_cotizacion }}')"

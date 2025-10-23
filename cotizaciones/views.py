@@ -152,3 +152,24 @@ def eliminar_departamento(request, pk):
     departamento.delete()
     messages.warning(request, 'Departamento eliminado.')
     return redirect('cotizaciones:lista_departamentos')
+
+@login_required
+def editar_cotizacion(request, pk):
+    """Vista para editar una cotización existente"""
+    cotizacion = get_object_or_404(Cotizacion, pk=pk, activo=True)
+    
+    if request.method == 'POST':
+        form = CotizacionForm(request.POST, instance=cotizacion)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Cotización {cotizacion.numero_cotizacion} actualizada exitosamente')
+            return redirect('cotizaciones:ver_cotizacion', pk=cotizacion.pk)
+        else:
+            messages.error(request, 'Por favor corrija los errores en el formulario')
+    else:
+        form = CotizacionForm(instance=cotizacion)
+    
+    return render(request, 'cotizaciones/editar_cotizacion.html', {
+        'form': form,
+        'cotizacion': cotizacion
+    })

@@ -109,6 +109,6 @@ class DepartamentoForm(forms.ModelForm):
             'area_m2': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'habitaciones': forms.NumberInput(attrs={'class': 'form-control'}),
             'banos': forms.NumberInput(attrs={'class': 'form-control'}),
-            'piso': forms.NumberInput(attrs={'class': 'form-control'}),
+            'pisos': forms.TextInput(attrs={'class': 'form-control'}),
             'disponible': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }

@@ -15,4 +15,3 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'inmobiliaria_project.settings')
 
 application = get_wsgi_application()
 
-web: gunicorn inmobiliaria_project.wsgi

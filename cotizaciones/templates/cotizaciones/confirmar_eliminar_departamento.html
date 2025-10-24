@@ -1,0 +1,29 @@
+{% extends 'cotizaciones/base.html' %}
+{% block title %}Eliminar Departamento{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-danger">⚠️ Confirmar eliminación</h2>
+    <p>¿Estás seguro de que deseas eliminar el departamento <strong>{{ departamento.nombre }}</strong>?</p>
+
+    {% if cotizaciones_relacionadas %}
+        <div class="alert alert-warning">
+            <strong>Advertencia:</strong> Esto también eliminará las siguientes cotizaciones:
+            <ul>
+                {% for cotizacion in cotizaciones_relacionadas %}
+                    <li>Cotización #{{ cotizacion.numero_cotizacion }} - {{ cotizacion.nombre_cliente }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            Este departamento no tiene cotizaciones asociadas.
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Sí, eliminar todo</button>
+        <a href="{% url 'cotizaciones:lista_departamentos' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

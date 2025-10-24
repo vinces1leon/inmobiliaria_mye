@@ -96,7 +96,7 @@ def generar_pdf_cotizacion(cotizacion):
     depto_data = [
         ['Código:', depto.codigo],
         ['Nombre:', depto.nombre],
-        ['Piso:', f'{depto.piso}°'],
+        ['Pisos:', f'{depto.pisos}°'],
         ['Área:', f'{depto.area_m2} m²'],
         ['Habitaciones:', str(depto.habitaciones)],
         ['Baños:', str(depto.banos)],

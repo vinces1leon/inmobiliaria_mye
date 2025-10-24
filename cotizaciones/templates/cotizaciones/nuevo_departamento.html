@@ -2,7 +2,7 @@
 {% block title %}Nuevo Departamento{% endblock %}
 {% block content %}
 <h2>Nuevo Departamento</h2>
-<form method="post" class="mt-3">
+<form method="post" enctype="multipart/form-data" class="mt-3">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit" class="btn btn-success">Guardar</button>

@@ -99,7 +99,7 @@ class DepartamentoForm(forms.ModelForm):
         model = Departamento
         fields = [
             'codigo', 'nombre', 'descripcion', 'precio', 'area_m2',
-            'habitaciones', 'banos', 'piso', 'disponible'
+            'habitaciones', 'banos', 'pisos', 'disponible', 'imagen'
         ]
         widgets = {
             'descripcion': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
@@ -111,4 +111,5 @@ class DepartamentoForm(forms.ModelForm):
             'banos': forms.NumberInput(attrs={'class': 'form-control'}),
             'pisos': forms.TextInput(attrs={'class': 'form-control'}),
             'disponible': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'imagen': forms.ClearableFileInput(attrs={'class': 'form-control'}),
         }

@@ -123,4 +123,15 @@
         </div>
     </div>
 </div>
+
+{% if creada %}
+<div class="alert alert-success text-center">
+    Cotización creada con éxito.
+    <a href="{{ pdf_url }}" target="_blank" class="btn btn-primary ms-2">
+        Ver PDF
+    </a>
+    <a href="{{ lista_url }}" class="btn btn-secondary ms-2">Volver a lista</a>
+</div>
+{% endif %}
+
 {% endblock %}

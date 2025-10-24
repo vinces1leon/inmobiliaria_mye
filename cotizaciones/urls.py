@@ -18,6 +18,8 @@ urlpatterns = [
     path('cotizaciones/pdf/<int:pk>/', views.descargar_pdf, name='descargar_pdf'),
     path('cotizaciones/imprimir/<int:pk>/', views.imprimir_cotizacion, name='imprimir_cotizacion'),
     path('cotizaciones/<int:pk>/editar/', views.editar_cotizacion, name='editar_cotizacion'),
+    path('ver_pdf/<int:pk>/', views.ver_pdf, name='ver_pdf'),
+    path('descargar_pdf/<int:pk>/', views.descargar_pdf, name='descargar_pdf'),
     # Departamentos
     path('departamentos/', views.lista_departamentos, name='lista_departamentos'),
     path('departamentos/nuevo/', views.nuevo_departamento, name='nuevo_departamento'),

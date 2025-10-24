@@ -13,8 +13,9 @@ class Departamento(models.Model):
     area_m2 = models.DecimalField(max_digits=6, decimal_places=2)
     habitaciones = models.IntegerField()
     banos = models.IntegerField()
-    piso = models.IntegerField()
+    pisos = models.CharField(max_length=50, null=True, blank=True)
     disponible = models.BooleanField(default=True)
+    imagen = models.ImageField(upload_to='departamentos/', blank=True, null=True)
     
     def __str__(self):
         return f"{self.codigo} - {self.nombre} - S/.{self.precio}"
@@ -37,7 +38,7 @@ class Cotizacion(models.Model):
     email_cliente = models.EmailField(blank=True, null=True)
     
     # Departamento cotizado
-    departamento = models.ForeignKey(Departamento, on_delete=models.PROTECT)
+    departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE, related_name='cotizaciones')
     
     # Información adicional
     observaciones = models.TextField(blank=True)

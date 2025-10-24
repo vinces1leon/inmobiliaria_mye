@@ -15,12 +15,17 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-solo-para-desarrollo-
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 # ALLOWED_HOSTS
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = []
 
-# Si estamos en Render, agregar el dominio de Render
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+# Desarrollo local
+if DEBUG:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+else:
+    # Producción - Render
+    ALLOWED_HOSTS = [os.environ.get('RENDER_EXTERNAL_HOSTNAME', '.onrender.com')]
+    # Agregar también el dominio sin prefijo
+    if os.environ.get('RENDER_EXTERNAL_HOSTNAME'):
+        ALLOWED_HOSTS.append(os.environ.get('RENDER_EXTERNAL_HOSTNAME'))
 
 # Application definition
 INSTALLED_APPS = [
@@ -131,9 +136,16 @@ LOGOUT_REDIRECT_URL = 'cotizaciones:login'
 
 # Security settings for production
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
+    # CSRF Settings
+    CSRF_TRUSTED_ORIGINS = [
+        'https://*.onrender.com',
+        f'https://{os.environ.get("RENDER_EXTERNAL_HOSTNAME")}' if os.environ.get("RENDER_EXTERNAL_HOSTNAME") else '',
+    ]
     CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    
+    # Security Headers
+    SECURE_SSL_REDIRECT = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'

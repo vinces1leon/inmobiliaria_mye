@@ -12,20 +12,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-solo-para-desarrollo-local')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = True
 
-# ALLOWED_HOSTS
-ALLOWED_HOSTS = []
-
-# Desarrollo local
-if DEBUG:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-else:
-    # Producción - Render
-    ALLOWED_HOSTS = [os.environ.get('RENDER_EXTERNAL_HOSTNAME', '.onrender.com')]
-    # Agregar también el dominio sin prefijo
-    if os.environ.get('RENDER_EXTERNAL_HOSTNAME'):
-        ALLOWED_HOSTS.append(os.environ.get('RENDER_EXTERNAL_HOSTNAME'))
+ALLOWED_HOSTS = ['inmobiliaria-mye.onrender.com','127.0.0.1','localhost']
 
 # Application definition
 INSTALLED_APPS = [
@@ -133,22 +122,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'cotizaciones:login'
 LOGIN_REDIRECT_URL = 'cotizaciones:lista_cotizaciones'
 LOGOUT_REDIRECT_URL = 'cotizaciones:login'
-
-# Security settings for production
-if not DEBUG:
-    # CSRF Settings
-    CSRF_TRUSTED_ORIGINS = [
-        'https://*.onrender.com',
-        f'https://{os.environ.get("RENDER_EXTERNAL_HOSTNAME")}' if os.environ.get("RENDER_EXTERNAL_HOSTNAME") else '',
-    ]
-    CSRF_COOKIE_SECURE = True
-    SESSION_COOKIE_SECURE = True
-    
-    # Security Headers
-    SECURE_SSL_REDIRECT = True
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = 'DENY'
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True

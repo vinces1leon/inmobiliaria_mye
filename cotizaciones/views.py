@@ -183,7 +183,7 @@ def editar_cotizacion(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, f'Cotización {cotizacion.numero_cotizacion} actualizada exitosamente')
-            return redirect('cotizaciones:ver_cotizacion', pk=cotizacion.pk)
+            return redirect('cotizaciones:lista_cotizaciones')
         else:
             messages.error(request, 'Por favor corrija los errores en el formulario')
     else:

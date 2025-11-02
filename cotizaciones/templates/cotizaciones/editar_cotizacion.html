@@ -32,12 +32,21 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Dirección</label>
-                        {{ form.direccion_cliente }}
-                        {% if form.direccion_cliente.errors %}
-                            <div class="text-danger">{{ form.direccion_cliente.errors }}</div>
-                        {% endif %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Dirección</label>
+                            {{ form.direccion_cliente }}
+                            {% if form.direccion_cliente.errors %}
+                                <div class="text-danger">{{ form.direccion_cliente.errors }}</div>
+                            {% endif %}
+                         </div>
+                         <div class="col-md-6">
+                            <label class='form-label'>Distrito</label>
+                            {{ form.distrito_cliente }}
+                            {% if form.distrito_cliente.erros %}
+                                <div class="text-danger">{{ form.distrito_cliente.errors }}</div>
+                            {% endif %}
+                        </div>
                     </div>
 
                     <div class="row mb-3">

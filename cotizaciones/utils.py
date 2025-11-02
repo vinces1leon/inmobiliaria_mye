@@ -1,7 +1,7 @@
 # cotizaciones/utils.py
 
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.pagesizes import letter, A4, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak, KeepTogether
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch, cm
@@ -10,7 +10,12 @@ from reportlab.pdfgen import canvas
 from reportlab.platypus.flowables import Flowable
 from io import BytesIO
 from datetime import datetime, timedelta
+from django.templatetags.static import static
+from django.conf import settings
 import os
+import requests
+from PIL import Image as PILImage
+
 
 class LineFlowable(Flowable):
     """Línea horizontal personalizada"""
@@ -35,7 +40,7 @@ def generar_pdf_cotizacion(cotizacion):
         pagesize=A4,
         rightMargin=1.5*cm,
         leftMargin=1.5*cm,
-        topMargin=2*cm,
+        topMargin=1*cm,
         bottomMargin=1*cm
     )
     
@@ -96,6 +101,17 @@ def generar_pdf_cotizacion(cotizacion):
         fontName='Helvetica'
     )
     
+    logo_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'logo.png')
+    logo = Image(logo_path, width=120, height=70)
+    logo_table = Table([[logo]], colWidths=[100])
+    logo_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]))
+
+    logo_table.hAlign = 'LEFT'
+    elements.append(logo_table)
+
     # ENCABEZADO CON LOGO Y NÚMERO DE PROFORMA
     header_data = [
         [
@@ -192,28 +208,7 @@ def generar_pdf_cotizacion(cotizacion):
     
     elements.append(cotizacion_table)
     elements.append(Spacer(1, 15))
-    
-    # FORMA DE PAGO Y RESUMEN DE PRECIOS
-    forma_pago_data = [
-        [Paragraph('<b>FORMA DE PAGO</b>', subtitulo_style), '', Paragraph('<b>MONTOS</b>', subtitulo_style)],
-        ['PRECIO', '', f'S/. {float(depto.precio):,.2f}'],
-        ['CUOTA INICIAL 10%', '', f'S/. {float(depto.precio) * 0.1:,.2f}'],
-        ['SEPARACIÓN:','', f'S/. {1500:,.2f}'],
-        ['SALDO CUOTA INICIAL', '', ''],
-        ['SALDO A FINANCIAR', '', f'S/. {float(depto.precio) * 0.9 -1500:,.2f}'],
-    ]
-    
-    forma_pago_table = Table(forma_pago_data, colWidths=[6*cm, 0*cm, 3*cm])
-    forma_pago_table.setStyle(TableStyle([
-        ('FONTNAME', (0, 0), (0, 0), 'Helvetica-Bold'),
-        ('FONTNAME', (2, 0), (2, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('ALIGN', (2, 1), (2, -1), 'RIGHT'),
-        ('LINEBELOW', (0, 0), (-1, 0), 1, colors.grey),
-        ('LINEBELOW', (0, -1), (-1, -1), 1, colors.black),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-    ]))
-    
+   
     # Tabla de descuento y precio total
     descuento_monto = float(depto.precio) * float(cotizacion.descuento) / 100 if cotizacion.descuento > 0 else 0
     
@@ -239,6 +234,28 @@ def generar_pdf_cotizacion(cotizacion):
         ('TOPPADDING', (0, 0), (-1, -1), 10),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
     ]))
+
+    # FORMA DE PAGO Y RESUMEN DE PRECIOS
+    forma_pago_data = [
+        [Paragraph('<b>FORMA DE PAGO</b>', subtitulo_style), '', Paragraph('<b>MONTOS</b>', subtitulo_style)],
+        ['PRECIO', '', f'S/. {cotizacion.precio_final:,.2f}'],
+        ['CUOTA INICIAL 10%', '', f'S/. {float(cotizacion.precio_final) * 0.1:,.2f}'],
+        ['SEPARACIÓN','', f'S/. {1500:,.2f}'],
+        ['SALDO A FINANCIAR', '', f'S/. {float(cotizacion.precio_final) * 0.9 -1500:,.2f}'],
+    ]
+    
+    forma_pago_table = Table(forma_pago_data, colWidths=[6*cm, 0*cm, 3*cm])
+    forma_pago_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (2, 0), (2, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('ALIGN', (2, 1), (2, -1), 'RIGHT'),
+        ('LINEBELOW', (0, 0), (-1, 0), 1, colors.grey),
+        ('LINEBELOW', (0, -1), (-1, -1), 1, colors.black),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+    ]))
+    
+
     
     # Agregar tablas de forma de pago
     tabla_contenedora = Table(
@@ -268,7 +285,7 @@ def generar_pdf_cotizacion(cotizacion):
     4.- Desembolso por parte del Banco del saldo financiado.
     """
     elements.append(Paragraph(proceso_texto, small_style))
-    elements.append(Spacer(1, 10))
+    elements.append(Spacer(1, 5))
     
     # INFORMACIÓN DE LA EMPRESA
     empresa_data = [
@@ -287,7 +304,7 @@ def generar_pdf_cotizacion(cotizacion):
         ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
     ]))
     elements.append(empresa_table)
-    elements.append(Spacer(1, 10))
+    elements.append(Spacer(1, 5))
     
     # NOTAS Y CONDICIONES
     elements.append(Paragraph('<b>Notas y Condiciones:</b>', subtitulo_style))
@@ -301,7 +318,7 @@ def generar_pdf_cotizacion(cotizacion):
     7. Nuestro proyecto cuenta con una edificación sismo resistente que cumple con lo dispuesto en el Reglamento Nacional de Edificaciones y todas las técnicas de la materia.
     """
     elements.append(Paragraph(notas_texto, ParagraphStyle('NotasStyle', parent=small_style, fontSize=8)))
-    elements.append(Spacer(1, 15))
+    elements.append(Spacer(1, 5))
     
     # INFORMES
     informes_data = [
@@ -323,10 +340,39 @@ def generar_pdf_cotizacion(cotizacion):
         ('RIGHTPADDING', (0, 0), (-1, -1), 10),
     ]))
     elements.append(informes_table)
+
+
+
+    if hasattr(depto.imagen, 'url'):
+        depto_image_path = depto.imagen.url
+    else:
+        depto_image_path = None
+
+    c = canvas.Canvas(buffer, pagesize=A4)
+
+    if depto_image_path:
+        try:
+            response = requests.get(depto_image_path)
+            if response.status_code == 200:
+                img_data = BytesIO(response.content)
+                pil_img = PILImage.open(img_data)
+                pil_img = pil_img.rotate(90, expand=True)
+
+                rotated_img_data = BytesIO()
+                pil_img.save(rotated_img_data, format='PNG')
+                rotated_img_data.seek(0)
+
+                depto_image = Image(rotated_img_data, width=550, height=650)  # intercambiamos ancho/alto
+                depto_image.hAlign = 'CENTER'
+                elements.append(PageBreak())
+                elements.append(depto_image)
+
+        except Exception as e:
+            print("Error cargando imagen del departamento:", e)
+
     
-    # Generar el PDF
-    doc.build(elements)
-    pdf = buffer.getvalue()
-    buffer.close()
-    
+    # Generar el PDF 
+    doc.build(elements) 
+    pdf = buffer.getvalue() 
+    buffer.close() 
     return pdf

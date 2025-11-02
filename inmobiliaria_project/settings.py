@@ -4,6 +4,9 @@ Django settings for inmobiliaria_project project.
 from pathlib import Path
 import os
 import dj_database_url
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,6 +19,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['inmobiliaria-mye.onrender.com','127.0.0.1','localhost']
 
+#Cloudinary
+CLOUDINARY_URL = os.getenv('CLOUDINARY_URL')
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -25,7 +32,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'cotizaciones',
+    'cloudinary',
+    'cloudinary_storage',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -55,6 +65,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'inmobiliaria_project.wsgi.application'
 

@@ -74,20 +74,22 @@
                         {% endif %}
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Descuento (%)</label>
-                        {{ form.descuento }}
-                        {% if form.descuento.errors %}
-                            <div class="text-danger">{{ form.descuento.errors }}</div>
-                        {% endif %}
-                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3">
+                            <label for="tipo_descuento" class="form-label">Tipo de descuento</label>
+                            {{ form.tipo_descuento }}
+                            {% if form.tipo_descuento.errors %}
+                                <div class="text-danger">{{ form.tipo_descuento.errors }}</div>
+                            {% endif %}
+                        </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Observaciones</label>
-                        {{ form.observaciones }}
-                        {% if form.observaciones.errors %}
-                            <div class="text-danger">{{ form.observaciones.errors }}</div>
-                        {% endif %}
+                        <div class="col-md-6 mb-3">
+                            <label for="valor_descuento" class="form-label">Valor</label>
+                            {{ form.valor_descuento }}
+                            {% if form.valor_descuento.errors %}
+                                <div class="text-danger">{{ form.valor_descuento.errors }}</div>
+                            {% endif %}
+                        </div>
                     </div>
 
                     <div class="d-flex gap-2">
@@ -103,4 +105,24 @@
         </div>
     </div>
 </div>
+
+<!-- JS opcional para placeholder dinámico -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const tipoSelect = document.getElementById("id_tipo_descuento");
+    const valorInput = document.getElementById("id_valor_descuento");
+
+    function actualizarPlaceholder() {
+        if(tipoSelect.value === "PORC") {
+            valorInput.placeholder = "Ej: 10 (10%)";
+        } else {
+            valorInput.placeholder = "Ej: 500 (S/)";
+        }
+    }
+
+    tipoSelect.addEventListener("change", actualizarPlaceholder);
+    actualizarPlaceholder();  // inicial
+});
+</script>
+
 {% endblock %}

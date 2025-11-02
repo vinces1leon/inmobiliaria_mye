@@ -44,27 +44,42 @@ class Cotizacion(models.Model):
     
     # Información adicional
     observaciones = models.TextField(blank=True)
-    descuento = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    precio_final = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
     
     # Metadatos
     fecha_creacion = models.DateTimeField(default=timezone.now)
     creado_por = models.ForeignKey(User, on_delete=models.PROTECT)
     activo = models.BooleanField(default=True)
+
+    TIPO_DESCUENTO_CHOICES = [
+        ('PORC', 'Porcentaje'),
+        ('MONTO', 'Monto')
+    ]
+
+    tipo_descuento = models.CharField(
+        max_length=5,
+        choices=TIPO_DESCUENTO_CHOICES,
+        default='PORC'
+    )
+    valor_descuento = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    precio_final = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+
     
     def save(self, *args, **kwargs):
         # Generar número de cotización automáticamente
         if not self.numero_cotizacion:
             ultimo = Cotizacion.objects.order_by('-id').first()
             if ultimo:
-                numero = int(ultimo.numero_cotizacion.split('_')[1]) + 1
+                numero = int(ultimo.numero_cotizacion.split('_')[1]) + 1 
             else:
                 numero = 1
             self.numero_cotizacion = f"cotizacion_{numero:02d}"
         
-        # Calcular precio final
-        self.precio_final = self.departamento.precio - (self.departamento.precio * self.descuento / 100)
-        
+        if self.tipo_descuento == 'PORC':
+            self.precio_final = self.departamento.precio - (self.departamento.precio * self.valor_descuento / 100)
+        else:  # MONTO
+            self.precio_final = self.departamento.precio - self.valor_descuento
+
         super().save(*args, **kwargs)
     
     def __str__(self):

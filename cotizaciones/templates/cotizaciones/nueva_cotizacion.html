@@ -87,7 +87,7 @@
                     <h5 class="mb-3 text-secondary">Información de la Cotización</h5>
                     
                     <div class="row">
-                        <div class="col-md-8 mb-3">
+                        <div class="mb-3">
                             <label for="{{ form.departamento.id_for_label }}" class="form-label">
                                 {{ form.departamento.label }} <span class="text-danger">*</span>
                             </label>
@@ -96,17 +96,22 @@
                                 <div class="text-danger small">{{ form.departamento.errors }}</div>
                             {% endif %}
                         </div>
-                        
-                        <div class="col-md-4 mb-3">
-                            <label for="{{ form.descuento.id_for_label }}" class="form-label">
-                                {{ form.descuento.label }}
-                            </label>
-                            <div class="input-group">
-                                {{ form.descuento }}
-                                <span class="input-group-text">%</span>
-                            </div>
-                            {% if form.descuento.errors %}
-                                <div class="text-danger small">{{ form.descuento.errors }}</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="tipo_descuento" class="form-label">Tipo de descuento</label>
+                            {{ form.tipo_descuento }}
+                            {% if form.tipo_descuento.errors %}
+                                <div class="text-danger">{{ form.tipo_descuento.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="valor_descuento" class="form-label">Valor</label>
+                            {{ form.valor_descuento }}
+                            {% if form.valor_descuento.errors %}
+                                <div class="text-danger">{{ form.valor_descuento.errors }}</div>
                             {% endif %}
                         </div>
                     </div>
@@ -134,5 +139,26 @@
     <a href="{{ lista_url }}" class="btn btn-secondary ms-2">Volver a lista</a>
 </div>
 {% endif %}
+
+<!-- JS para cambiar placeholder dinámicamente -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tipoSelect = document.getElementById('{{ form.tipo_descuento.id_for_label }}');
+    const valorInput = document.getElementById('{{ form.valor_descuento.id_for_label }}');
+
+    function actualizarPlaceholder() {
+        if (tipoSelect.value === 'porcentaje') {
+            valorInput.placeholder = 'Ingrese porcentaje (%)';
+            valorInput.max = 100;
+        } else {
+            valorInput.placeholder = 'Ingrese monto (S/)';
+            valorInput.removeAttribute('max');
+        }
+    }
+
+    tipoSelect.addEventListener('change', actualizarPlaceholder);
+    actualizarPlaceholder();  // Inicializa al cargar
+});
+</script>
 
 {% endblock %}

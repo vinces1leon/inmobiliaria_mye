@@ -28,6 +28,24 @@ class CotizacionForm(forms.ModelForm):
         label='Departamento preferido',
         empty_label='-- Seleccione un departamento --'
     )
+
+    TIPO_DESCUENTO_CHOICES = [
+        ('PORC', 'Porcentaje (%)'),
+        ('MONTO', 'Monto S/.')
+    ]
+
+    tipo_descuento = forms.ChoiceField(
+        choices=TIPO_DESCUENTO_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label='Tipo de Descuento'
+    )
+
+    descuento_monto = forms.NumberInput(attrs={
+        'class': 'form-control',
+        'min': '0',
+        'step': '0.01',
+        'placeholder': '0.00'
+    })
     
     class Meta:
         model = Cotizacion
@@ -39,7 +57,8 @@ class CotizacionForm(forms.ModelForm):
             'telefono_cliente',
             'email_cliente',
             'departamento',
-            'descuento'
+            'tipo_descuento',
+            'valor_descuento'
         ]
         widgets = {
             'nombre_cliente': forms.TextInput(attrs={
@@ -68,13 +87,15 @@ class CotizacionForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Email'
             }),
-            'descuento': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'min': '0',
-                'max': '100',
-                'step': '0.01',
-                'placeholder': '0.00'
-            })
+            'tipo_descuento': forms.Select(attrs={
+                'class': 'form-select', 
+                'id': 'tipo_descuento'
+            }),
+            'valor_descuento': forms.NumberInput(attrs={
+                'class': 'form-control', 
+                'id': 'valor_descuento', 
+                'min': '0'
+            }),
         }
         labels = {
             'nombre_cliente': 'Nombre del Cliente',
@@ -83,7 +104,8 @@ class CotizacionForm(forms.ModelForm):
             'distrito_cliente': 'Distrito',
             'telefono_cliente': 'Teléfono',
             'email_cliente': 'Email',
-            'descuento': 'Descuento (%)'
+            'valor_descuento': 'Descuento',
+            'tipo_descuento': 'Tipo de Descuento'
         }
     
     def clean_dni_cliente(self):

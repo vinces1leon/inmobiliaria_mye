@@ -39,8 +39,10 @@
                                 <td>{{ cotizacion.departamento.codigo }} - {{ cotizacion.departamento.nombre }}</td>
                                 <td>
                                     <strong>S/. {{ cotizacion.precio_final|floatformat:2 }}</strong>
-                                    {% if cotizacion.descuento > 0 %}
+                                    {% if cotizacion.tipo_descuento == 'PORC' and cotizacion.descuento > 0 %}
                                         <br><small class="text-success">{{ cotizacion.descuento }}% desc.</small>
+                                    {% elif cotizacion.tipo_descuento == 'MONTO' and cotizacion.descuento_monto > 0 %}
+                                        <br><small class="text-success">S/. {{ cotizacion.descuento_monto|floatformat:2 }} desc.</small>
                                     {% endif %}
                                 </td>
                                 <td>

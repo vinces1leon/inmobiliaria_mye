@@ -210,15 +210,21 @@ def generar_pdf_cotizacion(cotizacion):
     elements.append(Spacer(1, 15))
    
     # Tabla de descuento y precio total
-    descuento_monto = float(depto.precio) * float(cotizacion.descuento) / 100 if cotizacion.descuento > 0 else 0
-    
     resumen_data = []
-    if cotizacion.descuento > 0:
+
+    if cotizacion.tipo_descuento == 'PORC' and cotizacion.valor_descuento > 0:
+        descuento_monto = float(depto.precio) * float(cotizacion.valor_descuento) / 100
         resumen_data.append([
-            Paragraph(f'<b>Descuento Depa ({cotizacion.descuento}%)</b>', normal_style),
+            Paragraph(f'<b>Descuento ({cotizacion.valor_descuento}%)</b>', normal_style),
             f'S/. {descuento_monto:,.2f}'
         ])
-    
+    elif cotizacion.tipo_descuento == 'MONTO' and cotizacion.valor_descuento > 0:
+        resumen_data.append([
+            Paragraph('<b>Descuento </b>', normal_style),
+            f'S/. {cotizacion.valor_descuento:,.2f}'
+        ])
+
+    # Siempre mostrar precio final
     resumen_data.append([
         Paragraph('<b>Precio Total</b>', subtitulo_style),
         f'S/. {cotizacion.precio_final:,.2f}'

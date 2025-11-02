@@ -34,11 +34,11 @@ class CotizacionForm(forms.ModelForm):
         fields = [
             'nombre_cliente', 
             'dni_cliente', 
-            'direccion_cliente', 
+            'direccion_cliente',
+            'distrito_cliente', 
             'telefono_cliente',
             'email_cliente',
             'departamento',
-            'observaciones',
             'descuento'
         ]
         widgets = {
@@ -56,18 +56,17 @@ class CotizacionForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Dirección completa'
             }),
+            'distrito_cliente': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Distrito'
+            }),
             'telefono_cliente': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Teléfono'
             }),
             'email_cliente': forms.EmailInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Email (opcional)'
-            }),
-            'observaciones': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'Observaciones adicionales (opcional)'
+                'placeholder': 'Email'
             }),
             'descuento': forms.NumberInput(attrs={
                 'class': 'form-control',
@@ -81,9 +80,9 @@ class CotizacionForm(forms.ModelForm):
             'nombre_cliente': 'Nombre del Cliente',
             'dni_cliente': 'DNI',
             'direccion_cliente': 'Dirección',
+            'distrito_cliente': 'Distrito',
             'telefono_cliente': 'Teléfono',
             'email_cliente': 'Email',
-            'observaciones': 'Observaciones',
             'descuento': 'Descuento (%)'
         }
     
@@ -98,7 +97,7 @@ class DepartamentoForm(forms.ModelForm):
     class Meta:
         model = Departamento
         fields = [
-            'codigo', 'nombre', 'descripcion', 'precio', 'area_m2',
+            'codigo', 'nombre', 'descripcion', 'precio', 'area_m2', 'area_libre',
             'habitaciones', 'banos', 'pisos', 'disponible', 'imagen'
         ]
         widgets = {
@@ -106,10 +105,24 @@ class DepartamentoForm(forms.ModelForm):
             'codigo': forms.TextInput(attrs={'class': 'form-control'}),
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'precio': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'area_libre': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'area_m2': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'habitaciones': forms.NumberInput(attrs={'class': 'form-control'}),
             'banos': forms.NumberInput(attrs={'class': 'form-control'}),
             'pisos': forms.TextInput(attrs={'class': 'form-control'}),
             'disponible': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'imagen': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'codigo': 'Código',
+            'nombre': 'Nombre del Departamento',
+            'descripcion': 'Descripción',
+            'precio': 'Precio (S/.)',
+            'area_m2': 'Área Techada (m²)',
+            'area_libre': 'Área Libre (m²)',
+            'habitaciones': 'N° de Habitaciones',
+            'banos': 'N° de Baños',
+            'pisos': 'Pisos',
+            'disponible': 'Disponible',
+            'imagen': 'Imagen del Departamento',
         }

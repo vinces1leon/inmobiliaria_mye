@@ -5,7 +5,7 @@ from .models import Departamento, Cotizacion
 
 @admin.register(Departamento)
 class DepartamentoAdmin(admin.ModelAdmin):
-    list_display = ['codigo', 'nombre', 'precio', 'area_m2', 'habitaciones', 'banos', 'pisos', 'disponible']
+    list_display = ['codigo', 'nombre', 'precio','area_m2', 'area_libre', 'habitaciones', 'banos', 'pisos', 'disponible']
     list_filter = ['disponible', 'habitaciones', 'banos', 'pisos']
     search_fields = ['codigo', 'nombre', 'descripcion']
     list_editable = ['disponible', 'precio']

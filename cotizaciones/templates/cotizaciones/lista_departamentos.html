@@ -14,6 +14,7 @@
             <th>Imagen</th>
             <th>Nombre</th>
             <th>Área (m²)</th>
+            <th>Área Libre (m²)</th>
             <th>Precio</th>
             <th>Habitaciones</th>
             <th>Baños</th>
@@ -35,6 +36,7 @@
             </td>
             <td>{{ d.nombre }}</td>
             <td>{{ d.area_m2 }}</td>
+            <td>{{ d.area_libre }}</td>
             <td>S/ {{ d.precio|floatformat:2 }}</td>
             <td>{{ d.habitaciones }}</td>
             <td>{{ d.banos }}</td>

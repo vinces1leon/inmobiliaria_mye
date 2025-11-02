@@ -11,6 +11,7 @@ class Departamento(models.Model):
     descripcion = models.TextField(blank=True)
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     area_m2 = models.DecimalField(max_digits=6, decimal_places=2)
+    area_libre = models.DecimalField(max_digits=6, decimal_places=2)
     habitaciones = models.IntegerField()
     banos = models.IntegerField()
     pisos = models.CharField(max_length=50, null=True, blank=True)
@@ -34,6 +35,7 @@ class Cotizacion(models.Model):
     nombre_cliente = models.CharField(max_length=200)
     dni_cliente = models.CharField(max_length=8)
     direccion_cliente = models.CharField(max_length=300)
+    distrito_cliente = models.CharField(max_length=100)
     telefono_cliente = models.CharField(max_length=15)
     email_cliente = models.EmailField(blank=True, null=True)
     

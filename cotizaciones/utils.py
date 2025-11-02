@@ -2,17 +2,42 @@
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, A4
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak, KeepTogether
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.units import inch, cm
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
+from reportlab.pdfgen import canvas
+from reportlab.platypus.flowables import Flowable
 from io import BytesIO
-from datetime import datetime
+from datetime import datetime, timedelta
+import os
+
+class LineFlowable(Flowable):
+    """Línea horizontal personalizada"""
+    def __init__(self, width, height=1):
+        Flowable.__init__(self)
+        self.width = width
+        self.height = height
+
+    def __repr__(self):
+        return "Line(w=%s)" % self.width
+
+    def draw(self):
+        self.canv.setStrokeColor(colors.black)
+        self.canv.setLineWidth(0.5)
+        self.canv.line(0, self.height, self.width, self.height)
 
 def generar_pdf_cotizacion(cotizacion):
-    """Genera un PDF para la cotización"""
+    """Genera un PDF para la cotización estilo MyE Grupo Inmobiliario"""
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1*inch, bottomMargin=1*inch)
+    doc = SimpleDocTemplate(
+        buffer, 
+        pagesize=A4,
+        rightMargin=1.5*cm,
+        leftMargin=1.5*cm,
+        topMargin=2*cm,
+        bottomMargin=1*cm
+    )
     
     # Contenedor para los elementos del PDF
     elements = []
@@ -20,152 +45,284 @@ def generar_pdf_cotizacion(cotizacion):
     # Estilos
     styles = getSampleStyleSheet()
     
-    # Estilo personalizado para el título
-    titulo_style = ParagraphStyle(
-        'CustomTitle',
-        parent=styles['Heading1'],
-        fontSize=24,
-        textColor=colors.HexColor('#1a5490'),
-        spaceAfter=30,
-        alignment=TA_CENTER,
-        fontName='Helvetica-Bold'
+    # Estilos personalizados
+    titulo_empresa = ParagraphStyle(
+        'TituloEmpresa',
+        parent=styles['Normal'],
+        fontSize=16,
+        fontName='Helvetica-Bold',
+        alignment=TA_LEFT,
+        textColor=colors.HexColor('#2c3e50')
     )
     
-    # Estilo para subtítulos
+    titulo_proforma = ParagraphStyle(
+        'TituloProforma',
+        parent=styles['Normal'],
+        fontSize=20,
+        fontName='Helvetica-Bold',
+        alignment=TA_RIGHT,
+        textColor=colors.HexColor('#8B0000')
+    )
+    
+    numero_proforma = ParagraphStyle(
+        'NumeroProforma',
+        parent=styles['Normal'],
+        fontSize=18,
+        fontName='Helvetica-Bold',
+        alignment=TA_RIGHT,
+        textColor=colors.red
+    )
+    
     subtitulo_style = ParagraphStyle(
-        'Subtitle',
-        parent=styles['Heading2'],
-        fontSize=14,
-        textColor=colors.HexColor('#333333'),
-        spaceAfter=12,
-        fontName='Helvetica-Bold'
+        'Subtitulo',
+        parent=styles['Normal'],
+        fontSize=12,
+        fontName='Helvetica-Bold',
+        textColor=colors.HexColor('#34495e'),
+        spaceAfter=4
     )
     
-    # Título principal
-    elements.append(Paragraph("COTIZACIÓN DE DEPARTAMENTO", titulo_style))
-    elements.append(Spacer(1, 12))
+    normal_style = ParagraphStyle(
+        'NormalCustom',
+        parent=styles['Normal'],
+        fontSize=11,
+        fontName='Helvetica'
+    )
     
-    # Información de la cotización
-    info_data = [
-        ['N° Cotización:', cotizacion.numero_cotizacion],
-        ['Fecha:', cotizacion.fecha_creacion.strftime('%d/%m/%Y %H:%M')],
-        ['Asesor:', cotizacion.creado_por.get_full_name() or cotizacion.creado_por.username]
+    small_style = ParagraphStyle(
+        'Small',
+        parent=styles['Normal'],
+        fontSize=9,
+        fontName='Helvetica'
+    )
+    
+    # ENCABEZADO CON LOGO Y NÚMERO DE PROFORMA
+    header_data = [
+        [
+            Paragraph('<b>MyE Grupo Inmobiliario SAC</b>', titulo_empresa),
+            '',
+            Paragraph('PROFORMA', titulo_proforma)
+        ],
+        [
+            Paragraph('Construyendo tu Futuro<br/>Dirección del Proyecto: Av. Pío XII 318 San Miguel', small_style),
+            '',
+            Paragraph(f'N° {cotizacion.numero_cotizacion.replace("cotizacion_", "00")}', numero_proforma)
+        ]
     ]
     
-    info_table = Table(info_data, colWidths=[120, 350])
-    info_table.setStyle(TableStyle([
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+    header_table = Table(header_data, colWidths=[10*cm, 2*cm, 6*cm])
+    header_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+        ('ALIGN', (2, 0), (2, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('SPAN', (0, 1), (1, 1)),
     ]))
     
-    elements.append(info_table)
-    elements.append(Spacer(1, 20))
+    elements.append(header_table)
+    elements.append(Spacer(1, 10))
     
-    # Datos del cliente
-    elements.append(Paragraph("DATOS DEL CLIENTE", subtitulo_style))
+    # SECCIÓN CLIENTE
+    elements.append(Paragraph('<b>CLIENTE</b>', subtitulo_style))
+    
+    # Datos del cliente en formato de líneas con puntos
+    fecha_actual = cotizacion.fecha_creacion.strftime('%d/%m/%Y')
+    fecha_vencimiento = (cotizacion.fecha_creacion + timedelta(days=15)).strftime('%d/%m/%Y')
     
     cliente_data = [
-        ['Nombre:', cotizacion.nombre_cliente],
-        ['DNI:', cotizacion.dni_cliente],
-        ['Dirección:', cotizacion.direccion_cliente],
-        ['Teléfono:', cotizacion.telefono_cliente],
+        ['Nombre:', cotizacion.nombre_cliente, f'Fecha: {fecha_actual}'],
+        ['DNI:', cotizacion.dni_cliente, f'Presupuesto válido hasta: {fecha_vencimiento}'],
+        ['Domicilio:', cotizacion.direccion_cliente or '', ''],
+        ['Teléfono:', cotizacion.telefono_cliente or '', ''],
+        ['E-mail:', cotizacion.email_cliente or '', ''],
+        ['Distrito:', cotizacion.distrito_cliente or '', ''],
     ]
     
-    if cotizacion.email_cliente:
-        cliente_data.append(['Email:', cotizacion.email_cliente])
+    bold_style = ParagraphStyle('bold_style', fontName='Helvetica-Bold', fontSize=10)
+    normal_style = ParagraphStyle('normal_style', fontName='Helvetica', fontSize=10)
+
+    for row in cliente_data:
+
+        left_text = Paragraph(f"<b>{row[0]}</b> {row[1]}", normal_style)
+        right_text = Paragraph(row[2], normal_style)
+        data_table = Table(
+            [[left_text, right_text]],
+            colWidths=[8*cm, 10*cm]
+        )
+        
+        data_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (0, 0), 'LEFT'),   # Primera columna a la izquierda
+            ('ALIGN', (1, 0), (1, 0), 'RIGHT'),  # Segunda columna a la derecha
+            ('VALIGN', (0, 0), (-1, -1), 'BOTTOM'),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ]))
+        elements.append(data_table)
     
-    cliente_table = Table(cliente_data, colWidths=[120, 350])
-    cliente_table.setStyle(TableStyle([
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-    ]))
     
-    elements.append(cliente_table)
-    elements.append(Spacer(1, 20))
-    
-    # Datos del departamento
-    elements.append(Paragraph("INFORMACIÓN DEL DEPARTAMENTO", subtitulo_style))
-    
+    # TABLA DE COTIZACIÓN
     depto = cotizacion.departamento
-    depto_data = [
-        ['Código:', depto.codigo],
-        ['Nombre:', depto.nombre],
-        ['Pisos:', f'{depto.pisos}°'],
-        ['Área:', f'{depto.area_m2} m²'],
-        ['Habitaciones:', str(depto.habitaciones)],
-        ['Baños:', str(depto.banos)],
+    cotizacion_header = ['COTIZACIÓN', 'N°', 'Área techada', 'Área Libre', 'Precio']
+    cotizacion_data = [
+        cotizacion_header,
+        [
+            depto.nombre,
+            depto.codigo.replace("DEP-", ""),
+            f'{depto.area_m2} m²',
+            f'{depto.area_libre} m²',  # Área libre, puedes agregar este campo al modelo si lo necesitas
+            f'S/. {float(depto.precio):,.2f}'
+        ]
     ]
     
-    if depto.descripcion:
-        depto_data.append(['Descripción:', depto.descripcion[:100] + '...' if len(depto.descripcion) > 100 else depto.descripcion])
+    cotizacion_table = Table(cotizacion_data, colWidths=[5*cm, 2*cm, 3*cm, 3*cm, 4*cm])
+    cotizacion_table.setStyle(TableStyle([
+        # Encabezado
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#34495e')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        # Datos
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f5f5f5')]),
+    ]))
     
-    depto_table = Table(depto_data, colWidths=[120, 350])
-    depto_table.setStyle(TableStyle([
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+    elements.append(cotizacion_table)
+    elements.append(Spacer(1, 15))
+    
+    # FORMA DE PAGO Y RESUMEN DE PRECIOS
+    forma_pago_data = [
+        [Paragraph('<b>FORMA DE PAGO</b>', subtitulo_style), '', Paragraph('<b>MONTOS</b>', subtitulo_style)],
+        ['PRECIO', '', f'S/. {float(depto.precio):,.2f}'],
+        ['CUOTA INICIAL 10%', '', f'S/. {float(depto.precio) * 0.1:,.2f}'],
+        ['SEPARACIÓN:','', f'S/. {1500:,.2f}'],
+        ['SALDO CUOTA INICIAL', '', ''],
+        ['SALDO A FINANCIAR', '', f'S/. {float(depto.precio) * 0.9 -1500:,.2f}'],
+    ]
+    
+    forma_pago_table = Table(forma_pago_data, colWidths=[6*cm, 0*cm, 3*cm])
+    forma_pago_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (2, 0), (2, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('ALIGN', (2, 1), (2, -1), 'RIGHT'),
+        ('LINEBELOW', (0, 0), (-1, 0), 1, colors.grey),
+        ('LINEBELOW', (0, -1), (-1, -1), 1, colors.black),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
     ]))
     
-    elements.append(depto_table)
-    elements.append(Spacer(1, 20))
+    # Tabla de descuento y precio total
+    descuento_monto = float(depto.precio) * float(cotizacion.descuento) / 100 if cotizacion.descuento > 0 else 0
     
-    # Resumen de precios
-    elements.append(Paragraph("RESUMEN DE INVERSIÓN", subtitulo_style))
+    resumen_data = []
+    if cotizacion.descuento > 0:
+        resumen_data.append([
+            Paragraph(f'<b>Descuento Depa ({cotizacion.descuento}%)</b>', normal_style),
+            f'S/. {descuento_monto:,.2f}'
+        ])
     
-    precio_data = [
-        ['Precio base:', f'S/. {depto.precio:,.2f}'],
+    resumen_data.append([
+        Paragraph('<b>Precio Total</b>', subtitulo_style),
+        f'S/. {cotizacion.precio_final:,.2f}'
+    ])
+    
+    resumen_table = Table(resumen_data, colWidths=[5*cm, 3*cm])
+    resumen_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#e8f4f8')),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 11),
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+        ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#34495e')),
+        ('TOPPADDING', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+    ]))
+    
+    # Agregar tablas de forma de pago
+    tabla_contenedora = Table(
+        [[forma_pago_table, resumen_table]],
+        colWidths=[11*cm, 7*cm]  # Ajusta si deseas más o menos espacio
+    )
+
+    tabla_contenedora.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # Ambas arriba, a la misma altura
+        ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+        ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+    ]))
+
+    elements.append(tabla_contenedora)
+    elements.append(Spacer(1, 10))
+    
+    # PROCESO DE COMPRA
+    elements.append(Paragraph('<b>PROCESO DE COMPRA:</b>', subtitulo_style))
+    proceso_texto = """
+    1.- Pago de Separación S/. 1,500.00<br/>
+    2.- Aprobación de Crédito<br/>
+    3.- Cancelación de Cuota Inicial y firma de minuta<br/>
+    4.- Desembolso por parte del Banco del saldo financiado.
+    """
+    elements.append(Paragraph(proceso_texto, small_style))
+    elements.append(Spacer(1, 10))
+    
+    # INFORMACIÓN DE LA EMPRESA
+    empresa_data = [
+        ['MyE Grupo Inmobiliario SAC', 'RUC 20604554161'],
+        ['Cuenta Corriente BBVA Soles:', '0011-0467-0100005905'],
+        ['CCI BBVA Soles:', '011-467-000100005905-83']
     ]
     
-    if cotizacion.descuento > 0:
-        descuento_monto = depto.precio * cotizacion.descuento / 100
-        precio_data.append(['Descuento:', f'- S/. {descuento_monto:,.2f} ({cotizacion.descuento}%)'])
-    
-    precio_data.append(['', ''])  # Línea vacía
-    precio_data.append(['PRECIO FINAL:', f'S/. {cotizacion.precio_final:,.2f}'])
-    
-    precio_table = Table(precio_data, colWidths=[120, 350])
-    precio_table.setStyle(TableStyle([
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (0, -2), 'Helvetica'),
-        ('FONTNAME', (0, -1), (1, -1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -2), 10),
-        ('FONTSIZE', (0, -1), (-1, -1), 14),
-        ('TEXTCOLOR', (0, -1), (-1, -1), colors.HexColor('#1a5490')),
-        ('LINEABOVE', (0, -1), (-1, -1), 1, colors.black),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    empresa_table = Table(empresa_data, colWidths=[8*cm, 8*cm])
+    empresa_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('BOX', (0, 0), (-1, -1), 1, colors.black),
+        ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
     ]))
+    elements.append(empresa_table)
+    elements.append(Spacer(1, 10))
     
-    elements.append(precio_table)
+    # NOTAS Y CONDICIONES
+    elements.append(Paragraph('<b>Notas y Condiciones:</b>', subtitulo_style))
+    notas_texto = """
+    1. Luego del pago por concepto de separación, el Cliente tiene 10 días útiles para entregar todos los documentos a la Entidad Financiera<br/>
+    2. La Presente proforma no implica reserva del inmueble cotizado<br/>
+    3. El Cliente autoriza a la empresa para brindar sus datos de contacto e información para la evaluación de la solicitud de crédito<br/>
+    4. En caso de no aprobar el crédito hipotecario, se devolverá el 100% del monto de la Separación.<br/>
+    5. La presente proforma tiene una vigencia de 10 días y solo el stock sigue vigente.<br/>
+    6. Las imágenes entregadas en material gráfico, departamento, áreas, medios digitales, entre otros son referenciales. Las características del proyecto indicadas en los anexos del contrato de compra y venta.<br/>
+    7. Nuestro proyecto cuenta con una edificación sismo resistente que cumple con lo dispuesto en el Reglamento Nacional de Edificaciones y todas las técnicas de la materia.
+    """
+    elements.append(Paragraph(notas_texto, ParagraphStyle('NotasStyle', parent=small_style, fontSize=8)))
+    elements.append(Spacer(1, 15))
     
-    # Observaciones (si existen)
-    if cotizacion.observaciones:
-        elements.append(Spacer(1, 20))
-        elements.append(Paragraph("OBSERVACIONES", subtitulo_style))
-        obs_style = ParagraphStyle('Observations', parent=styles['Normal'], fontSize=10)
-        elements.append(Paragraph(cotizacion.observaciones, obs_style))
+    # INFORMES
+    informes_data = [
+        [Paragraph('<b>INFORMES:</b><br/>' +
+                  'Caseta de Ventas: Av. Pío XII 318, San Miguel<br/>' +
+                  'Horario de Atención: Lun. - Dom. de 10:00am. a 7:00 pm.<br/>' +
+                  'Teléfono: 987 615 200<br/>' +
+                  'Correo electrónico: ventas@myegrupoinmobiliario.com', small_style)]
+    ]
     
-    # Nota al pie
-    elements.append(Spacer(1, 40))
-    nota_style = ParagraphStyle(
-        'Note',
-        parent=styles['Normal'],
-        fontSize=8,
-        textColor=colors.grey,
-        alignment=TA_CENTER
-    )
-    elements.append(Paragraph(
-        "Esta cotización tiene una validez de 15 días a partir de la fecha de emisión. "
-        "Los precios están sujetos a cambios sin previo aviso.",
-        nota_style
-    ))
+    informes_table = Table(informes_data, colWidths=[11*cm], hAlign='LEFT')
+    informes_table.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 1, colors.black),      # Borde negro alrededor
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),             # Texto alineado a la izquierda
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),             # Texto arriba del cuadro
+        ('TOPPADDING', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+    ]))
+    elements.append(informes_table)
     
     # Generar el PDF
     doc.build(elements)

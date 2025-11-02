@@ -21,7 +21,6 @@ ALLOWED_HOSTS = ['inmobiliaria-mye.onrender.com','127.0.0.1','localhost']
 
 #Cloudinary
 CLOUDINARY_URL = os.getenv('CLOUDINARY_URL')
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Application definition
 INSTALLED_APPS = [
@@ -115,7 +114,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Configuración de WhiteNoise para servir archivos estáticos
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",

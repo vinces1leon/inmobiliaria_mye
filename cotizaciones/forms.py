@@ -148,3 +148,18 @@ class DepartamentoForm(forms.ModelForm):
             'estado': 'Estado del Departamento',
             'imagen': 'Imagen del Departamento',
         }
+class DepartamentoVendedorForm(forms.ModelForm):
+    """Formulario limitado para vendedores - Solo pueden editar el precio"""
+    class Meta:
+        model = Departamento
+        fields = ['precio']  # SOLO PRECIO
+        widgets = {
+            'precio': forms.NumberInput(attrs={
+                'class': 'form-control', 
+                'step': '0.01',
+                'placeholder': 'Ingrese el nuevo precio'
+            }),
+        }
+        labels = {
+            'precio': 'Precio (S/.)',
+        }

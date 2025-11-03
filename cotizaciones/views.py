@@ -8,7 +8,7 @@ from django.http import HttpResponse, FileResponse, Http404
 from django.views.decorators.http import require_POST
 from django.urls import reverse
 from .models import Cotizacion, Departamento
-from .forms import LoginForm, CotizacionForm, DepartamentoForm
+from .forms import LoginForm, CotizacionForm, DepartamentoForm, DepartamentoVendedorForm
 from .utils import generar_pdf_cotizacion
 from datetime import datetime
 import os
@@ -69,6 +69,15 @@ def nueva_cotizacion(request):
             })
     else:
         form = CotizacionForm()
+        
+        # Pre-seleccionar departamento si viene en la URL
+        dept_id = request.GET.get('departamento')
+        if dept_id:
+            try:
+                departamento = Departamento.objects.get(id=dept_id)
+                form.initial['departamento'] = departamento
+            except Departamento.DoesNotExist:
+                pass
 
     return render(request, 'cotizaciones/nueva_cotizacion.html', {'form': form})
 
@@ -130,16 +139,22 @@ def lista_departamentos(request):
         'departamentos': departamentos,
         'pisos_range': pisos_range,
         'departamentos_por_piso': departamentos_por_piso,
+        'es_admin': request.user.is_superuser or request.user.is_staff,
     })
 
 @login_required
 def nuevo_departamento(request):
+    # Solo admin puede crear departamentos
+    if not (request.user.is_superuser or request.user.is_staff):
+        messages.error(request, 'No tienes permisos para crear departamentos.')
+        return redirect('cotizaciones:lista_departamentos')
+    
     if request.method == 'POST':
         form = DepartamentoForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, 'Departamento creado exitosamente.')
-            return redirect('cotizaciones:lista_departamentos')  # IMPORTANTE: Redirigir aquí
+            return redirect('cotizaciones:lista_departamentos')
     else:
         form = DepartamentoForm()
         # Pre-llenar el piso si viene en la URL
@@ -156,16 +171,37 @@ def nuevo_departamento(request):
 def editar_departamento(request, pk):
     """Editar un departamento"""
     departamento = get_object_or_404(Departamento, pk=pk)
+    
+    # Verificar si es admin
+    es_admin = request.user.is_superuser or request.user.is_staff
+    
+    # Si el departamento está vendido y el usuario no es admin, denegar acceso
+    if departamento.estado == 'vendido' and not es_admin:
+        messages.error(request, 'No tienes permisos para editar departamentos vendidos.')
+        return redirect('cotizaciones:lista_departamentos')
+    
     if request.method == 'POST':
-        form = DepartamentoForm(request.POST, request.FILES, instance=departamento)
+        # Usar formulario diferente según el rol
+        if es_admin:
+            form = DepartamentoForm(request.POST, request.FILES, instance=departamento)
+        else:
+            form = DepartamentoVendedorForm(request.POST, instance=departamento)
+        
         if form.is_valid():
             form.save()
             messages.success(request, 'Departamento actualizado correctamente.')
             return redirect('cotizaciones:lista_departamentos')
     else:
-        form = DepartamentoForm(instance=departamento)
+        # Usar formulario diferente según el rol
+        if es_admin:
+            form = DepartamentoForm(instance=departamento)
+        else:
+            form = DepartamentoVendedorForm(instance=departamento)
+    
     return render(request, 'cotizaciones/editar_departamento.html', {
-        'form': form, 'departamento': departamento
+        'form': form, 
+        'departamento': departamento,
+        'es_admin': es_admin
     })
 
 @login_required

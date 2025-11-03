@@ -72,8 +72,7 @@
                         
                         <div class="col-md-6 mb-3">
                             <label for="{{ form.email_cliente.id_for_label }}" class="form-label">
-                                {{ form.email_cliente.label }} <span class="text-danger">*
-                                </span>
+                                {{ form.email_cliente.label }} <span class="text-danger">*</span>
                             </label>
                             {{ form.email_cliente }}
                             {% if form.email_cliente.errors %}
@@ -91,7 +90,19 @@
                             <label for="{{ form.departamento.id_for_label }}" class="form-label">
                                 {{ form.departamento.label }} <span class="text-danger">*</span>
                             </label>
-                            {{ form.departamento }}
+                            
+                            {% if form.initial.departamento %}
+                                <!-- Departamento pre-seleccionado - mostrar como texto y campo hidden -->
+                                <input type="text" class="form-control bg-light" value="{{ form.initial.departamento }}" readonly disabled>
+                                <input type="hidden" name="departamento" value="{{ form.initial.departamento.id }}">
+                                <div class="form-text text-primary">
+                                    <i class="bi bi-lock-fill"></i> El departamento ha sido pre-seleccionado y no puede modificarse.
+                                </div>
+                            {% else %}
+                                <!-- Selector normal -->
+                                {{ form.departamento }}
+                            {% endif %}
+                            
                             {% if form.departamento.errors %}
                                 <div class="text-danger small">{{ form.departamento.errors }}</div>
                             {% endif %}
@@ -131,7 +142,7 @@
 </div>
 
 {% if creada %}
-<div class="alert alert-success text-center">
+<div class="alert alert-success text-center mt-3">
     Cotización creada con éxito.
     <a href="{{ pdf_url }}" target="_blank" class="btn btn-primary ms-2">
         Ver PDF
@@ -147,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const valorInput = document.getElementById('{{ form.valor_descuento.id_for_label }}');
 
     function actualizarPlaceholder() {
-        if (tipoSelect.value === 'porcentaje') {
+        if (tipoSelect.value === 'PORC') {
             valorInput.placeholder = 'Ingrese porcentaje (%)';
             valorInput.max = 100;
         } else {

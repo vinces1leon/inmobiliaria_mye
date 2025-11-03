@@ -3,117 +3,172 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Editar Departamento: {{ departamento.nombre }}</h2>
+    <h2>
+        {% if es_admin %}
+            Editar Departamento: {{ departamento.nombre }}
+        {% else %}
+            Actualizar Precio: {{ departamento.nombre }}
+        {% endif %}
+    </h2>
+    
+    {% if not es_admin %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Como vendedor, solo puedes modificar el precio del departamento.
+    </div>
+    {% endif %}
     
     <form method="post" enctype="multipart/form-data" class="mt-4">
         {% csrf_token %}
         
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label for="{{ form.codigo.id_for_label }}" class="form-label">{{ form.codigo.label }}</label>
-                {{ form.codigo }}
-                {% if form.codigo.errors %}
-                    <div class="text-danger">{{ form.codigo.errors }}</div>
+        {% if es_admin %}
+            <!-- FORMULARIO COMPLETO PARA ADMIN -->
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.codigo.id_for_label }}" class="form-label">{{ form.codigo.label }}</label>
+                    {{ form.codigo }}
+                    {% if form.codigo.errors %}
+                        <div class="text-danger">{{ form.codigo.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.nombre.id_for_label }}" class="form-label">{{ form.nombre.label }}</label>
+                    {{ form.nombre }}
+                    {% if form.nombre.errors %}
+                        <div class="text-danger">{{ form.nombre.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="{{ form.descripcion.id_for_label }}" class="form-label">{{ form.descripcion.label }}</label>
+                {{ form.descripcion }}
+                {% if form.descripcion.errors %}
+                    <div class="text-danger">{{ form.descripcion.errors }}</div>
                 {% endif %}
             </div>
             
-            <div class="col-md-6 mb-3">
-                <label for="{{ form.nombre.id_for_label }}" class="form-label">{{ form.nombre.label }}</label>
-                {{ form.nombre }}
-                {% if form.nombre.errors %}
-                    <div class="text-danger">{{ form.nombre.errors }}</div>
-                {% endif %}
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.precio.id_for_label }}" class="form-label">{{ form.precio.label }}</label>
+                    {{ form.precio }}
+                    {% if form.precio.errors %}
+                        <div class="text-danger">{{ form.precio.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.area_m2.id_for_label }}" class="form-label">{{ form.area_m2.label }}</label>
+                    {{ form.area_m2 }}
+                    {% if form.area_m2.errors %}
+                        <div class="text-danger">{{ form.area_m2.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.area_libre.id_for_label }}" class="form-label">{{ form.area_libre.label }}</label>
+                    {{ form.area_libre }}
+                    {% if form.area_libre.errors %}
+                        <div class="text-danger">{{ form.area_libre.errors }}</div>
+                    {% endif %}
+                </div>
             </div>
-        </div>
-        
-        <div class="mb-3">
-            <label for="{{ form.descripcion.id_for_label }}" class="form-label">{{ form.descripcion.label }}</label>
-            {{ form.descripcion }}
-            {% if form.descripcion.errors %}
-                <div class="text-danger">{{ form.descripcion.errors }}</div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.habitaciones.id_for_label }}" class="form-label">{{ form.habitaciones.label }}</label>
+                    {{ form.habitaciones }}
+                    {% if form.habitaciones.errors %}
+                        <div class="text-danger">{{ form.habitaciones.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.banos.id_for_label }}" class="form-label">{{ form.banos.label }}</label>
+                    {{ form.banos }}
+                    {% if form.banos.errors %}
+                        <div class="text-danger">{{ form.banos.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.pisos.id_for_label }}" class="form-label">{{ form.pisos.label }}</label>
+                    {{ form.pisos }}
+                    {% if form.pisos.errors %}
+                        <div class="text-danger">{{ form.pisos.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.estado.id_for_label }}" class="form-label">{{ form.estado.label }}</label>
+                    {{ form.estado }}
+                    {% if form.estado.errors %}
+                        <div class="text-danger">{{ form.estado.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.imagen.id_for_label }}" class="form-label">{{ form.imagen.label }}</label>
+                    {{ form.imagen }}
+                    {% if form.imagen.errors %}
+                        <div class="text-danger">{{ form.imagen.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if departamento.imagen %}
+            <div class="mb-3">
+                <label class="form-label">Imagen actual:</label><br>
+                <img src="{{ departamento.imagen.url }}" alt="Imagen del departamento" class="img-thumbnail" style="max-width: 300px;">
+            </div>
             {% endif %}
-        </div>
-        
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <label for="{{ form.precio.id_for_label }}" class="form-label">{{ form.precio.label }}</label>
+            
+        {% else %}
+            <!-- FORMULARIO LIMITADO PARA VENDEDOR - SOLO PRECIO -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Información del Departamento</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Código:</strong> {{ departamento.codigo }}</p>
+                            <p><strong>Nombre:</strong> {{ departamento.nombre }}</p>
+                            <p><strong>Piso:</strong> {{ departamento.pisos }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Habitaciones:</strong> {{ departamento.habitaciones }}</p>
+                            <p><strong>Baños:</strong> {{ departamento.banos }}</p>
+                            <p><strong>Estado:</strong> 
+                                {% if departamento.estado == 'disponible' %}
+                                    <span class="badge bg-success">Disponible</span>
+                                {% elif departamento.estado == 'vendido' %}
+                                    <span class="badge bg-warning text-dark">Vendido</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Separado</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="{{ form.precio.id_for_label }}" class="form-label">
+                    <strong>{{ form.precio.label }}</strong>
+                </label>
+                <p class="text-muted small">Precio actual: S/ {{ departamento.precio|floatformat:2 }}</p>
                 {{ form.precio }}
                 {% if form.precio.errors %}
                     <div class="text-danger">{{ form.precio.errors }}</div>
                 {% endif %}
             </div>
-            
-            <div class="col-md-4 mb-3">
-                <label for="{{ form.area_m2.id_for_label }}" class="form-label">{{ form.area_m2.label }}</label>
-                {{ form.area_m2 }}
-                {% if form.area_m2.errors %}
-                    <div class="text-danger">{{ form.area_m2.errors }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="col-md-4 mb-3">
-                <label for="{{ form.area_libre.id_for_label }}" class="form-label">{{ form.area_libre.label }}</label>
-                {{ form.area_libre }}
-                {% if form.area_libre.errors %}
-                    <div class="text-danger">{{ form.area_libre.errors }}</div>
-                {% endif %}
-            </div>
-        </div>
-        
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <label for="{{ form.habitaciones.id_for_label }}" class="form-label">{{ form.habitaciones.label }}</label>
-                {{ form.habitaciones }}
-                {% if form.habitaciones.errors %}
-                    <div class="text-danger">{{ form.habitaciones.errors }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="col-md-4 mb-3">
-                <label for="{{ form.banos.id_for_label }}" class="form-label">{{ form.banos.label }}</label>
-                {{ form.banos }}
-                {% if form.banos.errors %}
-                    <div class="text-danger">{{ form.banos.errors }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="col-md-4 mb-3">
-                <label for="{{ form.pisos.id_for_label }}" class="form-label">{{ form.pisos.label }}</label>
-                {{ form.pisos }}
-                {% if form.pisos.errors %}
-                    <div class="text-danger">{{ form.pisos.errors }}</div>
-                {% endif %}
-            </div>
-        </div>
-        
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label for="{{ form.estado.id_for_label }}" class="form-label">{{ form.estado.label }}</label>
-                {{ form.estado }}
-                {% if form.estado.errors %}
-                    <div class="text-danger">{{ form.estado.errors }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="col-md-6 mb-3">
-                <label for="{{ form.imagen.id_for_label }}" class="form-label">{{ form.imagen.label }}</label>
-                {{ form.imagen }}
-                {% if form.imagen.errors %}
-                    <div class="text-danger">{{ form.imagen.errors }}</div>
-                {% endif %}
-            </div>
-        </div>
-        
-        {% if departamento.imagen %}
-        <div class="mb-3">
-            <label class="form-label">Imagen actual:</label><br>
-            <img src="{{ departamento.imagen.url }}" alt="Imagen del departamento" class="img-thumbnail" style="max-width: 300px;">
-        </div>
         {% endif %}
         
         <div class="mt-4">
             <button type="submit" class="btn btn-primary">
-                <i class="bi bi-save"></i> Actualizar
+                <i class="bi bi-save"></i> 
+                {% if es_admin %}Actualizar{% else %}Actualizar Precio{% endif %}
             </button>
             <a href="{% url 'cotizaciones:lista_departamentos' %}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left"></i> Volver

@@ -1,19 +1,124 @@
 {% extends 'cotizaciones/base.html' %}
 {% block title %}Editar Departamento{% endblock %}
+
 {% block content %}
-<h2>Editar Departamento: {{ departamento.nombre }}</h2>
-
-<form method="post" enctype="multipart/form-data" class="mt-3">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Actualizar</button>
-    <a href="{% url 'cotizaciones:lista_departamentos' %}" class="btn btn-secondary">Volver</a>
-</form>
-
-{% if departamento.imagen %}
-    <div class="mt-3">
-        <label>Imagen actual:</label><br>
-        <img src="{{ departamento.imagen.url }}" alt="Imagen del departamento" class="img-thumbnail" style="max-width: 300px;">
-    </div>
-{% endif %}
+<div class="container mt-4">
+    <h2>Editar Departamento: {{ departamento.nombre }}</h2>
+    
+    <form method="post" enctype="multipart/form-data" class="mt-4">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.codigo.id_for_label }}" class="form-label">{{ form.codigo.label }}</label>
+                {{ form.codigo }}
+                {% if form.codigo.errors %}
+                    <div class="text-danger">{{ form.codigo.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.nombre.id_for_label }}" class="form-label">{{ form.nombre.label }}</label>
+                {{ form.nombre }}
+                {% if form.nombre.errors %}
+                    <div class="text-danger">{{ form.nombre.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <label for="{{ form.descripcion.id_for_label }}" class="form-label">{{ form.descripcion.label }}</label>
+            {{ form.descripcion }}
+            {% if form.descripcion.errors %}
+                <div class="text-danger">{{ form.descripcion.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.precio.id_for_label }}" class="form-label">{{ form.precio.label }}</label>
+                {{ form.precio }}
+                {% if form.precio.errors %}
+                    <div class="text-danger">{{ form.precio.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.area_m2.id_for_label }}" class="form-label">{{ form.area_m2.label }}</label>
+                {{ form.area_m2 }}
+                {% if form.area_m2.errors %}
+                    <div class="text-danger">{{ form.area_m2.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.area_libre.id_for_label }}" class="form-label">{{ form.area_libre.label }}</label>
+                {{ form.area_libre }}
+                {% if form.area_libre.errors %}
+                    <div class="text-danger">{{ form.area_libre.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.habitaciones.id_for_label }}" class="form-label">{{ form.habitaciones.label }}</label>
+                {{ form.habitaciones }}
+                {% if form.habitaciones.errors %}
+                    <div class="text-danger">{{ form.habitaciones.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.banos.id_for_label }}" class="form-label">{{ form.banos.label }}</label>
+                {{ form.banos }}
+                {% if form.banos.errors %}
+                    <div class="text-danger">{{ form.banos.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.pisos.id_for_label }}" class="form-label">{{ form.pisos.label }}</label>
+                {{ form.pisos }}
+                {% if form.pisos.errors %}
+                    <div class="text-danger">{{ form.pisos.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.estado.id_for_label }}" class="form-label">{{ form.estado.label }}</label>
+                {{ form.estado }}
+                {% if form.estado.errors %}
+                    <div class="text-danger">{{ form.estado.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.imagen.id_for_label }}" class="form-label">{{ form.imagen.label }}</label>
+                {{ form.imagen }}
+                {% if form.imagen.errors %}
+                    <div class="text-danger">{{ form.imagen.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if departamento.imagen %}
+        <div class="mb-3">
+            <label class="form-label">Imagen actual:</label><br>
+            <img src="{{ departamento.imagen.url }}" alt="Imagen del departamento" class="img-thumbnail" style="max-width: 300px;">
+        </div>
+        {% endif %}
+        
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Actualizar
+            </button>
+            <a href="{% url 'cotizaciones:lista_departamentos' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+    </form>
+</div>
 {% endblock %}

@@ -117,25 +117,40 @@ def imprimir_cotizacion(request, pk):
 @login_required
 def lista_departamentos(request):
     """Lista de departamentos"""
-    departamentos = Departamento.objects.all()
+    departamentos = Departamento.objects.all().order_by('pisos', 'codigo')
+    pisos_range = range(1, 19)  # Del 1 al 18
+    
+    # Organizar departamentos por piso
+    departamentos_por_piso = {}
+    for piso in pisos_range:
+        depts_en_piso = departamentos.filter(pisos=piso).order_by('codigo')
+        departamentos_por_piso[piso] = list(depts_en_piso)
+    
     return render(request, 'cotizaciones/lista_departamentos.html', {
-        'departamentos': departamentos
+        'departamentos': departamentos,
+        'pisos_range': pisos_range,
+        'departamentos_por_piso': departamentos_por_piso,
     })
 
 @login_required
 def nuevo_departamento(request):
-    """Crear nuevo departamento"""
     if request.method == 'POST':
         form = DepartamentoForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, 'Departamento creado exitosamente.')
-            return redirect('cotizaciones:lista_departamentos')
-        else:
-            messages.error(request, 'Por favor, corrija los errores del formulario.')
+            return redirect('cotizaciones:lista_departamentos')  # IMPORTANTE: Redirigir aquí
     else:
         form = DepartamentoForm()
-    return render(request, 'cotizaciones/nuevo_departamento.html', {'form': form})
+        # Pre-llenar el piso si viene en la URL
+        piso = request.GET.get('piso')
+        if piso:
+            form.initial['pisos'] = piso
+    
+    return render(request, 'cotizaciones/nuevo_departamento.html', {
+        'form': form,
+        'titulo': 'Nuevo Departamento'
+    })
 
 @login_required
 def editar_departamento(request, pk):

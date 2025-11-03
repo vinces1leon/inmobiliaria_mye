@@ -120,7 +120,7 @@ class DepartamentoForm(forms.ModelForm):
         model = Departamento
         fields = [
             'codigo', 'nombre', 'descripcion', 'precio', 'area_m2', 'area_libre',
-            'habitaciones', 'banos', 'pisos', 'disponible', 'imagen'
+            'habitaciones', 'banos', 'pisos', 'estado', 'imagen'
         ]
         widgets = {
             'descripcion': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
@@ -132,7 +132,7 @@ class DepartamentoForm(forms.ModelForm):
             'habitaciones': forms.NumberInput(attrs={'class': 'form-control'}),
             'banos': forms.NumberInput(attrs={'class': 'form-control'}),
             'pisos': forms.TextInput(attrs={'class': 'form-control'}),
-            'disponible': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'estado': forms.Select(attrs={'class': 'form-select'}),
             'imagen': forms.ClearableFileInput(attrs={'class': 'form-control'}),
         }
         labels = {
@@ -145,6 +145,6 @@ class DepartamentoForm(forms.ModelForm):
             'habitaciones': 'N° de Habitaciones',
             'banos': 'N° de Baños',
             'pisos': 'Pisos',
-            'disponible': 'Disponible',
+            'estado': 'Estado del Departamento',
             'imagen': 'Imagen del Departamento',
         }

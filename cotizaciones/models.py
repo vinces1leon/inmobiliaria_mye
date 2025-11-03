@@ -5,6 +5,13 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 class Departamento(models.Model):
+
+    ESTADO_CHOICES = [
+        ('disponible', 'Disponible'),
+        ('vendido', 'Vendido'),
+        ('separado', 'Separado'),
+    ]
+
     """Modelo para los departamentos disponibles"""
     codigo = models.CharField(max_length=20, unique=True)
     nombre = models.CharField(max_length=100)
@@ -16,6 +23,7 @@ class Departamento(models.Model):
     banos = models.IntegerField()
     pisos = models.CharField(max_length=50, null=True, blank=True)
     disponible = models.BooleanField(default=True)
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='disponible')
     imagen = models.ImageField(upload_to='departamentos/', blank=True, null=True)
     
     def __str__(self):

@@ -313,11 +313,11 @@
                         {% if depts_en_piso %}
                         <!-- Mostrar los departamentos que existen -->
                             {% for dept in depts_en_piso %}
-                                {% if dept.estado == 'vendido' and not es_admin %}
+                                {% if dept.obj.estado == 'vendido' and not es_admin %}
                                 <!-- Departamento vendido y usuario NO es admin - BLOQUEADO -->
                                     <div class="apartment-cell vendido bloqueado"
                                         title="Departamento vendido - Solo administradores pueden ver detalles">
-                                        {{ dept.codigo|upper }}
+                                        {{ dept.obj.codigo|upper }}
                                     </div>
                                 {% else %}
                                     <!-- Departamento disponible o usuario ES admin - NORMAL -->

@@ -201,6 +201,10 @@ def editar_departamento(request, pk):
     departamento = get_object_or_404(Departamento, pk=pk)
     es_admin = request.user.is_superuser or request.user.is_staff
 
+    if departamento.estado == 'Vendido' and not es_admin:
+        messages.error(request, "No puedes editar un departamento que ya está vendido.")
+        return redirect('cotizaciones:lista_departamentos')
+
     # Caso 1: ADMIN → edita los datos generales del departamento
     if es_admin:
         if request.method == 'POST':

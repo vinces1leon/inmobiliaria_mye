@@ -35,6 +35,9 @@ class LineFlowable(Flowable):
 
 def generar_pdf_cotizacion(cotizacion):
     """Genera un PDF para la cotización estilo MyE Grupo Inmobiliario"""
+    from cotizaciones.models import DepartamentoUsuario
+
+
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer, 
@@ -179,15 +182,28 @@ def generar_pdf_cotizacion(cotizacion):
     # --- TABLA DE COTIZACIÓN ---
     if not cotizacion.datos_estaticos:
         depto = cotizacion.departamento
+        usuario = cotizacion.usuario
+
+        try:
+            dep_user = DepartamentoUsuario.objects.filter(departamento=depto, usuario=usuario).first()
+            if dep_user and dep_user.precio_personalizado:
+                precio_final = dep_user.precio_personalizado
+            else:
+                precio_final = depto.precio
+        except:
+            precio_final = depto.precio
+
         datos_estaticos = {
             "nombre": depto.nombre,
             "codigo": depto.codigo.replace("DEP-", ""),
             "area_m2": f"{depto.area_m2} m²",
             "area_libre": f"{depto.area_libre} m²",
-            "precio": f"S/. {float(depto.precio):,.2f}",
+            "precio": f"S/. {float(precio_final):,.2f}",
         }
+
         cotizacion.datos_estaticos = datos_estaticos
         cotizacion.save()
+
     else:
         depto = cotizacion.departamento
         datos_estaticos = cotizacion.datos_estaticos
@@ -364,10 +380,14 @@ def generar_pdf_cotizacion(cotizacion):
 
 
 
-    if hasattr(depto.imagen, 'url'):
-        depto_image_path = depto.imagen.url
-    else:
-        depto_image_path = None
+    depto_image_path = None
+
+    if getattr(depto, 'imagen', None):  # verifica que exista el campo
+        try:
+            if depto.imagen and hasattr(depto.imagen, 'url'):
+                depto_image_path = depto.imagen.url
+        except ValueError:
+            depto_image_path = None
 
     c = canvas.Canvas(buffer, pagesize=A4)
 

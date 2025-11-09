@@ -39,7 +39,9 @@ class Departamento(models.Model):
 class Cotizacion(models.Model):
     """Modelo para las cotizaciones"""
     numero_cotizacion = models.CharField(max_length=20, unique=True, editable=False)
-    
+
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cotizaciones', null=True, blank=True)
+
     # Datos del cliente
     nombre_cliente = models.CharField(max_length=200)
     dni_cliente = models.CharField(max_length=8)
@@ -84,22 +86,37 @@ class Cotizacion(models.Model):
             else:
                 numero = 1
             self.numero_cotizacion = f"cotizacion_{numero:02d}"
-        
-        if self.tipo_descuento == 'PORC':
-            self.precio_final = self.departamento.precio - (self.departamento.precio * self.valor_descuento / 100)
-        else:  # MONTO
-            self.precio_final = self.departamento.precio - self.valor_descuento
 
+        # --- NUEVO: usar precio personalizado si existe ---
+        from .models import DepartamentoUsuario  # Import local para evitar bucles
+
+        precio_base = self.departamento.precio  # Precio general por defecto
+        if self.usuario:
+            depa_usuario = DepartamentoUsuario.objects.filter(
+                departamento=self.departamento,
+                usuario=self.usuario
+            ).first()
+            if depa_usuario and depa_usuario.precio_personalizado is not None:
+                precio_base = depa_usuario.precio_personalizado
+
+        # Calcular precio final considerando descuento
+        if self.tipo_descuento == 'PORC':
+            self.precio_final = precio_base - (precio_base * self.valor_descuento / 100)
+        else:  # MONTO
+            self.precio_final = precio_base - self.valor_descuento
+
+        # Guardar datos estáticos del departamento (con el precio visible)
         if not self.datos_estaticos and self.departamento:
             self.datos_estaticos = {
                 "nombre": self.departamento.nombre,
                 "codigo": self.departamento.codigo.replace("DEP-", ""),
                 "area_m2": f"{self.departamento.area_m2} m²",
                 "area_libre": f"{self.departamento.area_libre} m²",
-                "precio": f"S/. {float(self.departamento.precio):,.2f}",
+                "precio": f"S/. {float(precio_base):,.2f}",  # usa el precio que corresponde al usuario
             }
 
         super().save(*args, **kwargs)
+
     
     def __str__(self):
         return f"{self.numero_cotizacion} - {self.nombre_cliente}"
@@ -108,3 +125,20 @@ class Cotizacion(models.Model):
         ordering = ['-fecha_creacion']
         verbose_name = 'Cotización'
         verbose_name_plural = 'Cotizaciones'
+
+class DepartamentoUsuario(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='departamentos_usuario')
+    departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE, related_name='precios_usuario')
+
+    # Solo el precio puede ser distinto por usuario
+    precio_personalizado = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('usuario', 'departamento')
+        verbose_name = "Precio personalizado por usuario"
+        verbose_name_plural = "Precios personalizados por usuario"
+
+    def __str__(self):
+        return f"{self.usuario.username} - {self.departamento.codigo} - {self.precio_personalizado or self.departamento.precio}"
+
+

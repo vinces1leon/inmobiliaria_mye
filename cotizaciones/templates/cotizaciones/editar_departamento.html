@@ -154,13 +154,13 @@
             </div>
             
             <div class="mb-3">
-                <label for="{{ form.precio.id_for_label }}" class="form-label">
-                    <strong>{{ form.precio.label }}</strong>
+                <label for="{{ form.precio_personalizado.id_for_label }}" class="form-label">
+                    <strong>{{ form.precio_personalizado.label }}</strong>
                 </label>
-                <p class="text-muted small">Precio actual: S/ {{ departamento.precio|floatformat:2 }}</p>
-                {{ form.precio }}
-                {% if form.precio.errors %}
-                    <div class="text-danger">{{ form.precio.errors }}</div>
+                <p class="text-muted small">Precio base: S/ {{ departamento.precio|floatformat:2 }}</p>
+                {{ form.precio_personalizado }}
+                {% if form.precio_personalizado.errors %}
+                    <div class="text-danger">{{ form.precio_personalizado.errors }}</div>
                 {% endif %}
             </div>
         {% endif %}

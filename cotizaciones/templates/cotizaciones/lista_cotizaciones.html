@@ -22,6 +22,7 @@
                                 <th>Departamento</th>
                                 <th>Precio Final</th>
                                 <th>Fecha</th>
+                                <th>Creado por</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -45,6 +46,9 @@
                                 <td>
                                     {{ cotizacion.fecha_creacion|date:"d/m/Y" }}<br>
                                     <small class="text-muted">{{ cotizacion.fecha_creacion|time:"H:i" }}</small>
+                                </td>
+                                <td>
+                                    {{ cotizacion.creado_por.username }}
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">

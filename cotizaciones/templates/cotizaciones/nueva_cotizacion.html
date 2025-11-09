@@ -98,6 +98,12 @@
                                 <div class="form-text text-primary">
                                     <i class="bi bi-lock-fill"></i> El departamento ha sido pre-seleccionado y no puede modificarse.
                                 </div>
+                                {% if precio_mostrado %}
+                                <div class="alert alert-info mt-2">
+                                    <i class="bi bi-cash-coin"></i>
+                                    <strong>Precio asignado:</strong> S/ {{ precio_mostrado|floatformat:2 }}
+                                </div>
+                                {% endif %}
                             {% else %}
                                 <!-- Selector normal -->
                                 {{ form.departamento }}

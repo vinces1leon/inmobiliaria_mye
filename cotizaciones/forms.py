@@ -2,7 +2,7 @@
 
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
-from .models import Cotizacion, Departamento
+from .models import Cotizacion, Departamento, DepartamentoUsuario
 
 class LoginForm(AuthenticationForm):
     """Formulario personalizado para el login"""
@@ -148,18 +148,19 @@ class DepartamentoForm(forms.ModelForm):
             'estado': 'Estado del Departamento',
             'imagen': 'Imagen del Departamento',
         }
+
 class DepartamentoVendedorForm(forms.ModelForm):
-    """Formulario limitado para vendedores - Solo pueden editar el precio"""
+    """Formulario para que los vendedores personalicen el precio del departamento (sin afectar el global)"""
     class Meta:
-        model = Departamento
-        fields = ['precio']  # SOLO PRECIO
+        model = DepartamentoUsuario
+        fields = ['precio_personalizado']
         widgets = {
-            'precio': forms.NumberInput(attrs={
-                'class': 'form-control', 
+            'precio_personalizado': forms.NumberInput(attrs={
+                'class': 'form-control',
                 'step': '0.01',
-                'placeholder': 'Ingrese el nuevo precio'
+                'placeholder': 'Ingrese su precio personalizado'
             }),
         }
         labels = {
-            'precio': 'Precio (S/.)',
+            'precio_personalizado': 'Precio personalizado (S/.)',
         }

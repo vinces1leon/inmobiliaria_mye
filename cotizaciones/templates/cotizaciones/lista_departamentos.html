@@ -321,20 +321,20 @@
                                     </div>
                                 {% else %}
                                     <!-- Departamento disponible o usuario ES admin - NORMAL -->
-                                    <div class="apartment-cell {{ dept.estado }}"
-                                        data-id="{{ dept.id }}"
-                                        data-codigo="{{ dept.codigo }}"
-                                        data-nombre="{{ dept.nombre }}"
-                                        data-area="{{ dept.area_m2 }}"
-                                        data-area-libre="{{ dept.area_libre }}"
-                                        data-precio="{{ dept.precio }}"
-                                        data-habitaciones="{{ dept.habitaciones }}"
-                                        data-banos="{{ dept.banos }}"
-                                        data-piso="{{ dept.pisos }}"
-                                        data-estado="{{ dept.estado }}"
-                                        data-imagen="{% if dept.imagen %}{{ dept.imagen.url }}{% endif %}"
+                                    <div class="apartment-cell {{ dept.obj.estado }}"
+                                        data-id="{{ dept.obj.id }}"
+                                        data-codigo="{{ dept.obj.codigo }}"
+                                        data-nombre="{{ dept.obj.nombre }}"
+                                        data-area="{{ dept.obj.area_m2 }}"
+                                        data-area-libre="{{ dept.obj.area_libre }}"
+                                        data-precio="{{ dept.precio_mostrado }}"
+                                        data-habitaciones="{{ dept.obj.habitaciones }}"
+                                        data-banos="{{ dept.obj.banos }}"
+                                        data-piso="{{ dept.obj.pisos }}"
+                                        data-estado="{{ dept.obj.estado }}"
+                                        data-imagen="{% if dept.obj.imagen %}{{ dept.obj.imagen.url }}{% endif %}"
                                         onclick="showApartmentDetails(this, event)">
-                                        {{ dept.codigo|upper }}
+                                        {{ dept.obj.codigo|upper }}
                                     </div>
                                 {% endif %}
                             {% endfor %}

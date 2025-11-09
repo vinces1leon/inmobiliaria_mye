@@ -15,6 +15,7 @@ from django.conf import settings
 import os
 import requests
 from PIL import Image as PILImage
+import json
 
 
 class LineFlowable(Flowable):
@@ -175,17 +176,31 @@ def generar_pdf_cotizacion(cotizacion):
         elements.append(data_table)
     
     
-    # TABLA DE COTIZACIÓN
-    depto = cotizacion.departamento
+    # --- TABLA DE COTIZACIÓN ---
+    if not cotizacion.datos_estaticos:
+        depto = cotizacion.departamento
+        datos_estaticos = {
+            "nombre": depto.nombre,
+            "codigo": depto.codigo.replace("DEP-", ""),
+            "area_m2": f"{depto.area_m2} m²",
+            "area_libre": f"{depto.area_libre} m²",
+            "precio": f"S/. {float(depto.precio):,.2f}",
+        }
+        cotizacion.datos_estaticos = datos_estaticos
+        cotizacion.save()
+    else:
+        depto = cotizacion.departamento
+        datos_estaticos = cotizacion.datos_estaticos
+
     cotizacion_header = ['COTIZACIÓN', 'N°', 'Área techada', 'Área Libre', 'Precio']
     cotizacion_data = [
         cotizacion_header,
         [
-            depto.nombre,
-            depto.codigo.replace("DEP-", ""),
-            f'{depto.area_m2} m²',
-            f'{depto.area_libre} m²',  # Área libre, puedes agregar este campo al modelo si lo necesitas
-            f'S/. {float(depto.precio):,.2f}'
+            datos_estaticos["nombre"],
+            datos_estaticos["codigo"],
+            datos_estaticos["area_m2"],
+            datos_estaticos["area_libre"],
+            datos_estaticos["precio"],
         ]
     ]
     

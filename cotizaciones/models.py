@@ -3,6 +3,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+import json
 
 class Departamento(models.Model):
 
@@ -71,6 +72,7 @@ class Cotizacion(models.Model):
     valor_descuento = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     precio_final = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    datos_estaticos = models.JSONField(null=True, blank=True)
 
     
     def save(self, *args, **kwargs):
@@ -87,6 +89,15 @@ class Cotizacion(models.Model):
             self.precio_final = self.departamento.precio - (self.departamento.precio * self.valor_descuento / 100)
         else:  # MONTO
             self.precio_final = self.departamento.precio - self.valor_descuento
+
+        if not self.datos_estaticos and self.departamento:
+            self.datos_estaticos = {
+                "nombre": self.departamento.nombre,
+                "codigo": self.departamento.codigo.replace("DEP-", ""),
+                "area_m2": f"{self.departamento.area_m2} m²",
+                "area_libre": f"{self.departamento.area_libre} m²",
+                "precio": f"S/. {float(self.departamento.precio):,.2f}",
+            }
 
         super().save(*args, **kwargs)
     

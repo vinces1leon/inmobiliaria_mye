@@ -2,7 +2,7 @@
 
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
-from .models import Cotizacion, Departamento, DepartamentoUsuario
+from .models import Cotizacion, Departamento
 
 class LoginForm(AuthenticationForm):
     """Formulario personalizado para el login"""
@@ -114,6 +114,33 @@ class CotizacionForm(forms.ModelForm):
             raise forms.ValidationError('El DNI debe contener exactamente 8 dígitos.')
         return dni
 
+    def clean(self):
+        cleaned_data = super().clean()
+
+        departamento = cleaned_data.get("departamento")
+        tipo = cleaned_data.get("tipo_descuento")
+        valor = cleaned_data.get("valor_descuento")
+
+        if not departamento or valor is None:
+            return cleaned_data
+
+        precio_original = departamento.precio
+        precio_base = precio_original + 50000
+
+        if tipo == "MONTO":
+            precio_final = precio_base - valor
+
+        elif tipo == "PORC":
+            precio_final = precio_base - (precio_base * (valor / 100))
+
+
+        if precio_final < precio_original:
+            self.add_error('valor_descuento',
+                f"Descuento invalido."
+            )
+
+        return cleaned_data
+
 class DepartamentoForm(forms.ModelForm):
     """Formulario para crear y editar departamentos"""
     class Meta:
@@ -147,20 +174,4 @@ class DepartamentoForm(forms.ModelForm):
             'pisos': 'Pisos',
             'estado': 'Estado del Departamento',
             'imagen': 'Imagen del Departamento',
-        }
-
-class DepartamentoVendedorForm(forms.ModelForm):
-    """Formulario para que los vendedores personalicen el precio del departamento (sin afectar el global)"""
-    class Meta:
-        model = DepartamentoUsuario
-        fields = ['precio_personalizado']
-        widgets = {
-            'precio_personalizado': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'step': '0.01',
-                'placeholder': 'Ingrese su precio personalizado'
-            }),
-        }
-        labels = {
-            'precio_personalizado': 'Precio personalizado (S/.)',
         }

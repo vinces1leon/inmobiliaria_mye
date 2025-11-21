@@ -3,6 +3,7 @@
 {% block title %}Nueva Cotización - Sistema{% endblock %}
 
 {% block content %}
+
 <div class="row">
     <div class="col-lg-8 mx-auto">
         <div class="card shadow">
@@ -40,7 +41,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="{{ form.direccion_cliente.id_for_label }}" class="form-label">
-                                {{ form.direccion_cliente.label }} <span class="text-danger">*</span>
+                                {{ form.direccion_cliente.label }}
                             </label>
                             {{ form.direccion_cliente }}
                             {% if form.direccion_cliente.errors %}
@@ -72,7 +73,7 @@
                         
                         <div class="col-md-6 mb-3">
                             <label for="{{ form.email_cliente.id_for_label }}" class="form-label">
-                                {{ form.email_cliente.label }} <span class="text-danger">*</span>
+                                {{ form.email_cliente.label }}
                             </label>
                             {{ form.email_cliente }}
                             {% if form.email_cliente.errors %}
@@ -87,28 +88,16 @@
                     
                     <div class="row">
                         <div class="mb-3">
-                            <label for="{{ form.departamento.id_for_label }}" class="form-label">
-                                {{ form.departamento.label }} <span class="text-danger">*</span>
-                            </label>
-                            
-                            {% if form.initial.departamento %}
-                                <!-- Departamento pre-seleccionado - mostrar como texto y campo hidden -->
-                                <input type="text" class="form-control bg-light" value="{{ form.initial.departamento }}" readonly disabled>
-                                <input type="hidden" name="departamento" value="{{ form.initial.departamento.id }}">
-                                <div class="form-text text-primary">
-                                    <i class="bi bi-lock-fill"></i> El departamento ha sido pre-seleccionado y no puede modificarse.
-                                </div>
-                                {% if precio_mostrado %}
+                            {% if departamento %}
+                                <input type="hidden" name="departamento" value="{{ departamento.id }}">
+
                                 <div class="alert alert-info mt-2">
-                                    <i class="bi bi-cash-coin"></i>
                                     <strong>Precio asignado:</strong> S/ {{ precio_mostrado|floatformat:2 }}
                                 </div>
-                                {% endif %}
                             {% else %}
-                                <!-- Selector normal -->
                                 {{ form.departamento }}
                             {% endif %}
-                            
+
                             {% if form.departamento.errors %}
                                 <div class="text-danger small">{{ form.departamento.errors }}</div>
                             {% endif %}
@@ -131,8 +120,16 @@
                                 <div class="text-danger">{{ form.valor_descuento.errors }}</div>
                             {% endif %}
                         </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="cuota_inicial" class="form-label">Cuota Inicial (S/)</label>
+                            <input type="number" step="0.01" min="0" name="cuota_inicial" id="cuota_inicial" class="form-control" placeholder="Ingrese la cuota inicial deseada" required>
+                        </div>
+
                     </div>
                     
+
+
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{% url 'cotizaciones:lista_cotizaciones' %}" class="btn btn-secondary">
                             <i class="bi bi-x-circle"></i> Cancelar

@@ -35,8 +35,6 @@ class LineFlowable(Flowable):
 
 def generar_pdf_cotizacion(cotizacion):
     """Genera un PDF para la cotización estilo MyE Grupo Inmobiliario"""
-    from cotizaciones.models import DepartamentoUsuario
-
 
     buffer = BytesIO()
     doc = SimpleDocTemplate(
@@ -180,32 +178,25 @@ def generar_pdf_cotizacion(cotizacion):
     
     
     # --- TABLA DE COTIZACIÓN ---
+    depto = cotizacion.departamento
+    precio_base_asignado = float(depto.precio) + 500000.0
+
     if not cotizacion.datos_estaticos:
-        depto = cotizacion.departamento
-        usuario = cotizacion.usuario
-
-        try:
-            dep_user = DepartamentoUsuario.objects.filter(departamento=depto, usuario=usuario).first()
-            if dep_user and dep_user.precio_personalizado:
-                precio_final = dep_user.precio_personalizado
-            else:
-                precio_final = depto.precio
-        except:
-            precio_final = depto.precio
-
         datos_estaticos = {
             "nombre": depto.nombre,
             "codigo": depto.codigo.replace("DEP-", ""),
             "area_m2": f"{depto.area_m2} m²",
             "area_libre": f"{depto.area_libre} m²",
-            "precio": f"S/. {float(precio_final):,.2f}",
+            "precio": f"S/. {precio_base_asignado:,.2f}",
         }
-
         cotizacion.datos_estaticos = datos_estaticos
-        cotizacion.save()
+
+        try:
+            cotizacion.save()
+        except Exception:
+            pass
 
     else:
-        depto = cotizacion.departamento
         datos_estaticos = cotizacion.datos_estaticos
 
     cotizacion_header = ['COTIZACIÓN', 'N°', 'Área techada', 'Área Libre', 'Precio']
@@ -244,7 +235,7 @@ def generar_pdf_cotizacion(cotizacion):
     resumen_data = []
 
     if cotizacion.tipo_descuento == 'PORC' and cotizacion.valor_descuento > 0:
-        descuento_monto = float(depto.precio) * float(cotizacion.valor_descuento) / 100
+        descuento_monto = float(precio_base_asignado) * float(cotizacion.valor_descuento) / 100
         resumen_data.append([
             Paragraph(f'<b>Descuento ({cotizacion.valor_descuento}%)</b>', normal_style),
             f'S/. {descuento_monto:,.2f}'
@@ -272,13 +263,17 @@ def generar_pdf_cotizacion(cotizacion):
         ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
     ]))
 
+    cuota_inicial = float(cotizacion.cuota_inicial) if cotizacion.cuota_inicial else 0
+    separacion = 1500
+    saldo_financiar = float(cotizacion.precio_final) - cuota_inicial - separacion
+
     # FORMA DE PAGO Y RESUMEN DE PRECIOS
     forma_pago_data = [
         [Paragraph('<b>FORMA DE PAGO</b>', subtitulo_style), '', Paragraph('<b>MONTOS</b>', subtitulo_style)],
         ['PRECIO', '', f'S/. {cotizacion.precio_final:,.2f}'],
-        ['CUOTA INICIAL 10%', '', f'S/. {float(cotizacion.precio_final) * 0.1:,.2f}'],
-        ['SEPARACIÓN','', f'S/. {1500:,.2f}'],
-        ['SALDO A FINANCIAR', '', f'S/. {float(cotizacion.precio_final) * 0.9 -1500:,.2f}'],
+        ['CUOTA INICIAL', '', f'S/. {cuota_inicial:,.2f}'],
+        ['SEPARACIÓN','', f'S/. {separacion:,.2f}'],
+        ['SALDO A FINANCIAR', '', f'S/. {saldo_financiar:,.2f}'],
     ]
     
     forma_pago_table = Table(forma_pago_data, colWidths=[6*cm, 0*cm, 3*cm])

@@ -45,10 +45,11 @@ class Cotizacion(models.Model):
     # Datos del cliente
     nombre_cliente = models.CharField(max_length=200)
     dni_cliente = models.CharField(max_length=8)
-    direccion_cliente = models.CharField(max_length=300)
+    direccion_cliente = models.CharField(blank=True, null=True)
     distrito_cliente = models.CharField(max_length=100)
     telefono_cliente = models.CharField(max_length=15)
     email_cliente = models.EmailField(blank=True, null=True)
+    cuota_inicial = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     
     # Departamento cotizado
     departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE, related_name='cotizaciones')
@@ -87,17 +88,8 @@ class Cotizacion(models.Model):
                 numero = 1
             self.numero_cotizacion = f"cotizacion_{numero:02d}"
 
-        # --- NUEVO: usar precio personalizado si existe ---
-        from .models import DepartamentoUsuario  # Import local para evitar bucles
 
-        precio_base = self.departamento.precio  # Precio general por defecto
-        if self.usuario:
-            depa_usuario = DepartamentoUsuario.objects.filter(
-                departamento=self.departamento,
-                usuario=self.usuario
-            ).first()
-            if depa_usuario and depa_usuario.precio_personalizado is not None:
-                precio_base = depa_usuario.precio_personalizado
+        precio_base = self.departamento.precio + 50000
 
         # Calcular precio final considerando descuento
         if self.tipo_descuento == 'PORC':
@@ -112,7 +104,7 @@ class Cotizacion(models.Model):
                 "codigo": self.departamento.codigo.replace("DEP-", ""),
                 "area_m2": f"{self.departamento.area_m2} m²",
                 "area_libre": f"{self.departamento.area_libre} m²",
-                "precio": f"S/. {float(precio_base):,.2f}",  # usa el precio que corresponde al usuario
+                "precio": f"S/. {float(precio_base):,.2f}",
             }
 
         super().save(*args, **kwargs)
@@ -125,20 +117,5 @@ class Cotizacion(models.Model):
         ordering = ['-fecha_creacion']
         verbose_name = 'Cotización'
         verbose_name_plural = 'Cotizaciones'
-
-class DepartamentoUsuario(models.Model):
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='departamentos_usuario')
-    departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE, related_name='precios_usuario')
-
-    # Solo el precio puede ser distinto por usuario
-    precio_personalizado = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-
-    class Meta:
-        unique_together = ('usuario', 'departamento')
-        verbose_name = "Precio personalizado por usuario"
-        verbose_name_plural = "Precios personalizados por usuario"
-
-    def __str__(self):
-        return f"{self.usuario.username} - {self.departamento.codigo} - {self.precio_personalizado or self.departamento.precio}"
 
 

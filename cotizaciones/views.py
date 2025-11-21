@@ -7,8 +7,8 @@ from django.contrib import messages
 from django.http import HttpResponse, FileResponse, Http404
 from django.views.decorators.http import require_POST
 from django.urls import reverse
-from .models import Cotizacion, Departamento, DepartamentoUsuario
-from .forms import LoginForm, CotizacionForm, DepartamentoForm, DepartamentoVendedorForm
+from .models import Cotizacion, Departamento
+from .forms import LoginForm, CotizacionForm, DepartamentoForm
 from .utils import generar_pdf_cotizacion
 from datetime import datetime
 import os
@@ -50,14 +50,31 @@ def lista_cotizaciones(request):
 
 @login_required
 def nueva_cotizacion(request):
-    precio_mostrado = None  # 👈 Precio que se mostrará al crear la cotización
+
+    departamento = None
+    precio_mostrado = None
+
+    dept_id = request.GET.get('departamento') or request.POST.get('departamento')
+
+    if dept_id:
+        try:
+            departamento = Departamento.objects.get(id=dept_id)
+            precio_mostrado = departamento.precio + 50000
+        except Departamento.DoesNotExist:
+            departamento = None
 
     if request.method == 'POST':
         form = CotizacionForm(request.POST)
+
+        if departamento:
+            form.data = form.data.copy()
+            form.data["departamento"] = departamento.id
+
         if form.is_valid():
             cotizacion = form.save(commit=False)
-            cotizacion.usuario = request.user          # <- Este es el usuario que ve y personaliza
-            cotizacion.creado_por = request.user       # <- Este es obligatorio (lo que te faltaba)
+            cotizacion.usuario = request.user
+            cotizacion.creado_por = request.user
+            cotizacion.cuota_inicial = request.POST.get("cuota_inicial")
             cotizacion.save()
 
             pdf_url = reverse('cotizaciones:ver_pdf', args=[cotizacion.pk])
@@ -69,34 +86,24 @@ def nueva_cotizacion(request):
                 'lista_url': lista_url,
                 'creada': True
             })
+
+        return render(request, 'cotizaciones/nueva_cotizacion.html', {
+            'form': form,
+            'departamento': departamento,
+            'precio_mostrado': precio_mostrado,
+        })
+
     else:
         form = CotizacionForm()
-        dept_id = request.GET.get('departamento')
 
-        if dept_id:
-            try:
-                departamento = Departamento.objects.get(id=dept_id)
-                form.initial['departamento'] = departamento
-
-                # 👇 Buscar precio personalizado si existe para este usuario
-                dep_user = DepartamentoUsuario.objects.filter(
-                    departamento=departamento, usuario=request.user
-                ).first()
-
-                if dep_user and dep_user.precio_personalizado:
-                    precio_mostrado = dep_user.precio_personalizado
-                else:
-                    precio_mostrado = departamento.precio
-
-            except Departamento.DoesNotExist:
-                pass
+        if departamento:
+            form.initial['departamento'] = departamento
 
     return render(request, 'cotizaciones/nueva_cotizacion.html', {
         'form': form,
+        'departamento': departamento,
         'precio_mostrado': precio_mostrado
     })
-
-
 
 
 @login_required
@@ -149,12 +156,11 @@ def lista_departamentos(request):
     # Agregar precios personalizados por usuario
     departamentos_info = []
     for depto in departamentos:
-        dep_usuario = DepartamentoUsuario.objects.filter(usuario=request.user, departamento=depto).first()
-        precio = dep_usuario.precio_personalizado if dep_usuario and dep_usuario.precio_personalizado else depto.precio
+        precio_mostrado = depto.precio
 
         departamentos_info.append({
             'obj': depto,
-            'precio_mostrado': precio
+            'precio_mostrado': precio_mostrado
         })
 
     # Organizar departamentos por piso (usando la info con precio personalizado)
@@ -215,41 +221,12 @@ def editar_departamento(request, pk):
                 return redirect('cotizaciones:lista_departamentos')
         else:
             form = DepartamentoForm(instance=departamento)
-        
-        return render(request, 'cotizaciones/editar_departamento.html', {
-            'form': form,
-            'departamento': departamento,
-            'es_admin': es_admin,
-            'precio_mostrado': departamento.precio,  # Para consistencia
-        })
-
-    # Caso 2: VENDEDOR → solo puede editar su precio personalizado
-    else:
-        dep_user, _ = DepartamentoUsuario.objects.get_or_create(
-            usuario=request.user,
-            departamento=departamento
-        )
-
-        # Mostrar el precio correcto: personalizado o base
-        precio_mostrado = dep_user.precio_personalizado if dep_user.precio_personalizado else departamento.precio
-
-        if request.method == 'POST':
-            form = DepartamentoVendedorForm(request.POST, instance=dep_user)
-            if form.is_valid():
-                dep_user = form.save(commit=False)
-                dep_user.usuario = request.user  # asegurar vínculo
-                dep_user.departamento = departamento  # asegurar vínculo
-                dep_user.save()
-                messages.success(request, 'Tu precio personalizado ha sido actualizado.')
-                return redirect('cotizaciones:lista_departamentos')
-        else:
-            form = DepartamentoVendedorForm(instance=dep_user)
 
         return render(request, 'cotizaciones/editar_departamento.html', {
             'form': form,
             'departamento': departamento,
-            'es_admin': es_admin,
-            'precio_mostrado': precio_mostrado,  # 🔹 Enviamos esto al template
+            'es_admin': True,
+            'precio_mostrado': precio_mostrado,
         })
 
 
@@ -299,16 +276,6 @@ def editar_cotizacion(request, pk):
 def ver_pdf(request, pk):
     cotizacion = get_object_or_404(Cotizacion, pk=pk)
 
-    # Buscar si el usuario que creó la cotización tiene un precio personalizado del departamento
-    dep_usuario = DepartamentoUsuario.objects.filter(
-        usuario=cotizacion.creado_por,
-        departamento=cotizacion.departamento
-    ).first()
-
-    # Pasar el precio correcto al generador de PDF
-    precio_final = dep_usuario.precio_personalizado if dep_usuario and dep_usuario.precio_personalizado else cotizacion.departamento.precio
-
-    # Generar el PDF con el precio personalizado
     pdf_buffer = generar_pdf_cotizacion(cotizacion)
 
     if isinstance(pdf_buffer, bytes):

@@ -203,7 +203,6 @@ def nuevo_departamento(request):
 
 @login_required
 def editar_departamento(request, pk):
-    """Editar un departamento o precio personalizado según el rol"""
     departamento = get_object_or_404(Departamento, pk=pk)
     es_admin = request.user.is_superuser or request.user.is_staff
 
@@ -211,8 +210,10 @@ def editar_departamento(request, pk):
         messages.error(request, "No puedes editar un departamento que ya está vendido.")
         return redirect('cotizaciones:lista_departamentos')
 
-    # Caso 1: ADMIN → edita los datos generales del departamento
     if es_admin:
+
+        precio_mostrado = departamento.precio
+
         if request.method == 'POST':
             form = DepartamentoForm(request.POST, request.FILES, instance=departamento)
             if form.is_valid():
@@ -228,6 +229,7 @@ def editar_departamento(request, pk):
             'es_admin': True,
             'precio_mostrado': precio_mostrado,
         })
+
 
 
 

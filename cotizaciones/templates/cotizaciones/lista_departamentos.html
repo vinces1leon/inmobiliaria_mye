@@ -344,6 +344,7 @@
                                         data-piso="{{ dept.obj.pisos }}"
                                         data-estado="{{ dept.obj.estado }}"
                                         data-imagen="{% if dept.obj.imagen %}{{ dept.obj.imagen.url }}{% endif %}"
+                                        data-editar-url="{% url 'cotizaciones:editar_departamento' dept.obj.id %}"
                                         onclick="showApartmentDetails(this, event)">
                                         {{ dept.obj.codigo|upper }}
                                     </div>
@@ -421,7 +422,21 @@ function showApartmentDetails(element, event) {
     }
     
     const cotizacionUrl = `/cotizaciones/nueva/?departamento=${data.id}`;
-    
+
+    /* -----------------------------------------
+       🔥 AGREGAR BOTÓN EDITAR (SOLO SI ADMIN)
+    ------------------------------------------ */
+    {% if es_admin %}
+        const editarHtml = `
+            <a href="${data.editarUrl}" class="btn btn-primary w-100">
+                <i class="bi bi-pencil-square"></i> Editar Departamento
+            </a>
+        `;
+    {% else %}
+        const editarHtml = ``;
+    {% endif %}
+    /* ----------------------------------------- */
+
     const detailsHtml = `
         <div class="details-header">
             <h4>DEPARTAMENTO ${data.codigo.toUpperCase()}</h4>
@@ -477,6 +492,8 @@ function showApartmentDetails(element, event) {
             <a href="${cotizacionUrl}" class="btn btn-success w-100 mb-2">
                 <i class="bi bi-file-earmark-text"></i> Nueva Cotización
             </a>
+
+            ${editarHtml}
         </div>
     `;
     
@@ -484,6 +501,7 @@ function showApartmentDetails(element, event) {
     panel.classList.remove('empty');
     panel.innerHTML = detailsHtml;
 }
+
 
 function createNewApartment(piso, posicion) {
     const url = "{% url 'cotizaciones:nuevo_departamento' %}?piso=" + piso + "&posicion=" + posicion;

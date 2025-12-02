@@ -392,7 +392,7 @@ def generar_pdf_cotizacion(cotizacion):
             if response.status_code == 200:
                 img_data = BytesIO(response.content)
                 pil_img = PILImage.open(img_data)
-                pil_img = pil_img.rotate(90, expand=True)
+                #pil_img = pil_img.rotate(90, expand=True)
 
                 rotated_img_data = BytesIO()
                 pil_img.save(rotated_img_data, format='PNG')

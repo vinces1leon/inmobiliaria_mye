@@ -398,7 +398,7 @@ def generar_pdf_cotizacion(cotizacion):
                 pil_img.save(rotated_img_data, format='PNG')
                 rotated_img_data.seek(0)
 
-                depto_image = Image(rotated_img_data, width=550, height=650)  # intercambiamos ancho/alto
+                depto_image = Image(rotated_img_data, width=550, height=750)  # intercambiamos ancho/alto
                 depto_image.hAlign = 'CENTER'
                 elements.append(PageBreak())
                 elements.append(depto_image)

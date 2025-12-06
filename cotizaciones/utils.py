@@ -152,7 +152,7 @@ def generar_pdf_cotizacion(cotizacion):
         ['Domicilio:', cotizacion.direccion_cliente or '', ''],
         ['Teléfono:', cotizacion.telefono_cliente or '', ''],
         ['E-mail:', cotizacion.email_cliente or '', ''],
-        ['Distrito:', cotizacion.distrito_cliente or '', ''],
+        ['Distrito:', cotizacion.distrito_cliente or '',f'Medio de Captación: {cotizacion.medio_contacto}'],
     ]
     
     bold_style = ParagraphStyle('bold_style', fontName='Helvetica-Bold', fontSize=10)

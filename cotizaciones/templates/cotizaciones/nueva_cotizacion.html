@@ -81,6 +81,18 @@
                             {% endif %}
                         </div>
                     </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.medio_contacto.id_for_label }}" class="form-label">
+                                {{ form.medio_contacto.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.medio_contacto }}
+                            {% if form.medio_contacto.errors %}
+                                <div class="text-danger small">{{ form.medio_contacto.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
                     
                     <hr>
                     

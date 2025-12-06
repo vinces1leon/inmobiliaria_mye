@@ -28,6 +28,7 @@
                                 <th>N° Cotización</th>
                                 <th>Cliente</th>
                                 <th>DNI</th>
+                                <th>Medio de Captación</th>
                                 <th>Departamento</th>
                                 <th>Precio Final</th>
                                 <th>Fecha</th>
@@ -43,6 +44,7 @@
                                 </td>
                                 <td>{{ cotizacion.nombre_cliente }}</td>
                                 <td>{{ cotizacion.dni_cliente }}</td>
+                                <td>{{ cotizacion.medio_contacto }}</td>
                                 <td>{{ cotizacion.departamento.codigo }} - {{ cotizacion.departamento.nombre }}</td>
                                 <td>
                                     <strong>S/. {{ cotizacion.precio_final|floatformat:2 }}</strong>

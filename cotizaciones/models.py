@@ -50,7 +50,20 @@ class Cotizacion(models.Model):
     telefono_cliente = models.CharField(max_length=15)
     email_cliente = models.EmailField(blank=True, null=True)
     cuota_inicial = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-    
+
+    MEDIO_CONTACTO_CHOICES = [
+        ('Facebook', 'Facebook'),
+        ('Nexo Inmobiliario', 'Nexo Inmobiliario'),
+        ('Pasó por la zona', 'Pasó por la zona'),
+        ('Otros', 'Otros'),
+    ]
+    medio_contacto = models.CharField(
+        max_length=50,
+        choices=MEDIO_CONTACTO_CHOICES,
+        default='Otros',
+        verbose_name='Medio de captación'
+    )
+
     # Departamento cotizado
     departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE, related_name='cotizaciones')
     

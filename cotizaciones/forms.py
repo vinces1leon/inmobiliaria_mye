@@ -56,6 +56,7 @@ class CotizacionForm(forms.ModelForm):
             'distrito_cliente', 
             'telefono_cliente',
             'email_cliente',
+            'medio_contacto',
             'departamento',
             'tipo_descuento',
             'valor_descuento'
@@ -87,6 +88,9 @@ class CotizacionForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Email'
             }),
+            'medio_contacto': forms.Select(attrs={
+                'class': 'form-select'
+            }),
             'tipo_descuento': forms.Select(attrs={
                 'class': 'form-select', 
                 'id': 'tipo_descuento'
@@ -104,6 +108,7 @@ class CotizacionForm(forms.ModelForm):
             'distrito_cliente': 'Distrito',
             'telefono_cliente': 'Teléfono',
             'email_cliente': 'Email',
+            'medio_contacto': 'Medio de captación',
             'valor_descuento': 'Descuento',
             'tipo_descuento': 'Tipo de Descuento'
         }

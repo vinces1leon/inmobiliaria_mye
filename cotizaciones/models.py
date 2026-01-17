@@ -18,6 +18,7 @@ class Departamento(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField(blank=True)
     precio = models.DecimalField(max_digits=10, decimal_places=2)
+    exceso_precio = models.DecimalField(max_digits=10, decimal_places=2, default=50000, verbose_name='Exceso de precio',help_text='Monto adicional al precio base')
     area_m2 = models.DecimalField(max_digits=6, decimal_places=2)
     area_libre = models.DecimalField(max_digits=6, decimal_places=2)
     habitaciones = models.IntegerField()
@@ -102,7 +103,7 @@ class Cotizacion(models.Model):
             self.numero_cotizacion = f"cotizacion_{numero:02d}"
 
 
-        precio_base = self.departamento.precio + 50000
+        precio_base = self.departamento.precio + self.departamento.exceso_precio
 
         # Calcular precio final considerando descuento
         if self.tipo_descuento == 'PORC':

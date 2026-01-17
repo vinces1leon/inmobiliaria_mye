@@ -130,7 +130,7 @@ class CotizacionForm(forms.ModelForm):
             return cleaned_data
 
         precio_original = departamento.precio
-        precio_base = precio_original + 50000
+        precio_base = precio_original + departamento.exceso_precio
 
         if tipo == "MONTO":
             precio_final = precio_base - valor
@@ -151,7 +151,7 @@ class DepartamentoForm(forms.ModelForm):
     class Meta:
         model = Departamento
         fields = [
-            'codigo', 'nombre', 'descripcion', 'precio', 'area_m2', 'area_libre',
+            'codigo', 'nombre', 'descripcion', 'precio', 'exceso_precio', 'area_m2', 'area_libre',
             'habitaciones', 'banos', 'pisos', 'estado', 'imagen'
         ]
         widgets = {
@@ -159,6 +159,7 @@ class DepartamentoForm(forms.ModelForm):
             'codigo': forms.TextInput(attrs={'class': 'form-control'}),
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'precio': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'exceso_precio': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'area_libre': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'area_m2': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'habitaciones': forms.NumberInput(attrs={'class': 'form-control'}),
@@ -172,6 +173,7 @@ class DepartamentoForm(forms.ModelForm):
             'nombre': 'Nombre del Departamento',
             'descripcion': 'Descripción',
             'precio': 'Precio (S/.)',
+            'exceso_precio': 'Exceso de Precio (S/.)',
             'area_m2': 'Área Techada (m²)',
             'area_libre': 'Área Libre (m²)',
             'habitaciones': 'N° de Habitaciones',

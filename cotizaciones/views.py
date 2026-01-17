@@ -59,7 +59,7 @@ def nueva_cotizacion(request):
     if dept_id:
         try:
             departamento = Departamento.objects.get(id=dept_id)
-            precio_mostrado = departamento.precio + 50000
+            precio_mostrado = departamento.precio + departamento.exceso_precio
         except Departamento.DoesNotExist:
             departamento = None
 

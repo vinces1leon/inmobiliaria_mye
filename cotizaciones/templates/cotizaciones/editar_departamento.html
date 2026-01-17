@@ -56,6 +56,14 @@
                         <div class="text-danger">{{ form.precio.errors }}</div>
                     {% endif %}
                 </div>
+
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.exceso_precio.id_for_label }}" class="form-label">{{ form.exceso_precio.label }}</label>
+                    {{ form.exceso_precio }}
+                    {% if form.exceso_precio.errors %}
+                        <div class="text-danger">{{ form.exceso_precio.errors }}</div>
+                    {% endif %}
+                </div>
                 
                 <div class="col-md-4 mb-3">
                     <label for="{{ form.area_m2.id_for_label }}" class="form-label">{{ form.area_m2.label }}</label>

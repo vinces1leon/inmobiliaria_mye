@@ -179,7 +179,7 @@ def generar_pdf_cotizacion(cotizacion):
     
     # --- TABLA DE COTIZACIÓN ---
     depto = cotizacion.departamento
-    precio_base_asignado = float(depto.precio) + 500000.0
+    precio_base_asignado = float(depto.precio) + float(depto.exceso_precio)
 
     if not cotizacion.datos_estaticos:
         datos_estaticos = {
